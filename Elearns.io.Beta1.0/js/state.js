@@ -39,7 +39,7 @@ var iS = null;
 
 function makeArrowIcon(rot) {
   var h = '<div class="gps-arrow"><div class="gps-arrow-acc"></div><div class="gps-arrow-ring"></div>';
-  h += '<svg viewBox="0 0 48 48" style="transform:rotate(' + rot + 'deg)">';
+  h += '<svg viewBox="0 0 48 48">';
   h += '<defs>';
   h += '<filter id="gf" x="-50%" y="-50%" width="200%" height="200%">';
   h += '<feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#4d9eff" flood-opacity="0.55"/>';
@@ -47,7 +47,6 @@ function makeArrowIcon(rot) {
   h += '</defs>';
   h += '<circle cx="24" cy="24" r="11" fill="#fff" filter="url(#gf)"/>';
   h += '<circle cx="24" cy="24" r="9" fill="#4d9eff"/>';
-  h += '<path d="M24 7 L33 24 L24 20 L15 24 Z" fill="url(#gArrow)" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>';
   h += '</svg></div>';
   return L.divIcon({className: "", html: h, iconSize: [48, 48], iconAnchor: [24, 24]});
 }

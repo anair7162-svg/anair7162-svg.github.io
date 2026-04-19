@@ -44,10 +44,6 @@ function makeArrowIcon(rot) {
   h += '<filter id="gf" x="-50%" y="-50%" width="200%" height="200%">';
   h += '<feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#4d9eff" flood-opacity="0.55"/>';
   h += '</filter>';
-  h += '<linearGradient id="gArrow" x1="0%" y1="0%" x2="0%" y2="100%">';
-  h += '<stop offset="0%" stop-color="#7bb8ff"/>';
-  h += '<stop offset="100%" stop-color="#4d9eff"/>';
-  h += '</linearGradient>';
   h += '</defs>';
   h += '<circle cx="24" cy="24" r="11" fill="#fff" filter="url(#gf)"/>';
   h += '<circle cx="24" cy="24" r="9" fill="#4d9eff"/>';

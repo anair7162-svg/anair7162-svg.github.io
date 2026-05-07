@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>eLearns.au</title>
+  <title>eLearns.au - Learner Navigator</title>
   <link rel="icon" type="image/png" href="icon.png">
 
 
@@ -4474,6 +4474,9 @@ function switchTab(tab) {
     document.getElementById(`${tab}-view`).classList.add('active');
     document.getElementById('topbar').classList.add('hidden');
     document.getElementById('info-card').style.display = 'none';
+    if (tab === 'logbook') renderLogbook();
+    if (tab === 'routes')  renderRoutes();
+    if (tab === 'profile') renderProfile();
   } else {
     document.getElementById('topbar').classList.remove('hidden');
     document.getElementById('info-card').style.display = '';
@@ -4497,7 +4500,23 @@ function renderLogbook() {
   const r = 54, circ = 2*Math.PI*r;
   const dash = circ * pct;
 
-  body.innerHTML = `
+  const guestBannerLb = !SB_USER ? `
+    <div class="guest-banner">
+      <div class="guest-banner-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="guest-banner-text">
+        <strong>Not signed in</strong>
+        <span>Sign in to sync your logbook across devices</span>
+      </div>
+      <button class="guest-banner-btn" onclick="openAuthModal('login')">Sign In</button>
+    </div>
+  ` : '';
+
+  const dimOpen  = !SB_USER ? '<div class="guest-dimmed">' : '';
+  const dimClose = !SB_USER ? '</div>' : '';
+
+  body.innerHTML = guestBannerLb + dimOpen + `
     <div class="lb-ring-wrap">
       <svg class="lb-ring-svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
@@ -4557,7 +4576,7 @@ function renderLogbook() {
         </div>
       </div>
     `).join('')}
-  `;
+  ` + dimClose;
 }
 
 // Log session modal
@@ -4696,16 +4715,30 @@ function addSavedRoute(km, dur, title, difficulty, radius) {
 
 function renderRoutes() {
   const body = document.getElementById('routes-body');
+  const guestBannerRt = !SB_USER ? `
+    <div class="guest-banner">
+      <div class="guest-banner-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="guest-banner-text">
+        <strong>Not signed in</strong>
+        <span>Sign in to save routes across devices</span>
+      </div>
+      <button class="guest-banner-btn" onclick="openAuthModal('login')">Sign In</button>
+    </div>
+  ` : '';
+  const dimOpen  = !SB_USER ? '<div class="guest-dimmed">' : '';
+  const dimClose = !SB_USER ? '</div>' : '';
   if (savedRoutes.length === 0) {
-    body.innerHTML = `
+    body.innerHTML = guestBannerRt + dimOpen + `
       <div class="rt-empty">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M12 19h4.5a3.5 3.5 0 0 0 0-7h-8a3.5 3.5 0 0 1 0-7H12"/></svg>
         <p>No saved routes yet</p>
         <span>Generate a loop route to get started</span>
-      </div>`;
+      </div>` + dimClose;
     return;
   }
-  body.innerHTML = savedRoutes.map((r, i) => `
+  body.innerHTML = guestBannerRt + dimOpen + savedRoutes.map((r, i) => `
     <div class="rt-entry" onclick="openRouteDetail(${i})">
       <div class="rt-entry-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M12 19h4.5a3.5 3.5 0 0 0 0-7h-8a3.5 3.5 0 0 1 0-7H12"/></svg>
@@ -4718,7 +4751,7 @@ function renderRoutes() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
       </button>
     </div>
-  `).join('');
+  `).join('') + dimClose;
 }
 
 function deleteRoute(i) {
@@ -5066,10 +5099,57 @@ function showToast(msg) {
 
 function renderProfile() {
   const { dayH, nightH, km, totalH } = lbTotals();
-  document.getElementById('profile-body').innerHTML = `
+  const isLight = document.body.getAttribute('data-theme') === 'light';
+  const ltLabels = { L: 'Learner', P1: 'P1 Red', P2: 'P2 Green' };
+  const displayName = SB_USER ? (SB_USER.name || SB_USER.email || 'Driver') : 'Guest';
+  const displaySub  = SB_USER
+    ? ((ltLabels[SB_USER.licence_type] || 'Learner') + ' — NSW')
+    : 'Guest — NSW';
+
+  const accountSection = SB_USER ? `
+    <div class="pf-row" onclick="doSignOut()">
+      <div class="pf-row-icon" style="background:rgba(248,113,113,0.12)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <div class="pf-row-text">
+        <strong>Sign Out</strong>
+        <span>${SB_USER.email || ''}</span>
+      </div>
+      <div class="pf-row-arrow">›</div>
+    </div>
+  ` : `
+    <div class="pf-warn-card">
+      <div style="flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div>
+        <strong>Not Logged In</strong>
+        <span>Your progress won't be saved across devices</span>
+      </div>
+    </div>
+    <div class="pf-row" onclick="openAuthModal('login')">
+      <div class="pf-row-icon warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+      <div class="pf-row-text">
+        <strong>Sign In / Sign Up</strong>
+        <span>Save your routes and logbook</span>
+      </div>
+      <div class="pf-row-arrow">›</div>
+    </div>
+  `;
+
+  const guestBannerPf = !SB_USER ? `
+    <div class="guest-banner">
+      <div class="guest-banner-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="guest-banner-text">
+        <strong>Not signed in</strong>
+        <span>Your progress won't be saved across devices</span>
+      </div>
+      <button class="guest-banner-btn" onclick="openAuthModal('login')">Sign In</button>
+    </div>
+  ` : '';
+
+  document.getElementById('profile-body').innerHTML = guestBannerPf + `
     <div class="pf-name-wrap">
-      <div class="pf-name">Guest</div>
-      <div class="pf-sub">Learner — NSW</div>
+      <div class="pf-name">${displayName}</div>
+      <div class="pf-sub">${displaySub}</div>
     </div>
 
     <div class="pf-stats">
@@ -5089,32 +5169,16 @@ function renderProfile() {
 
     <div class="pf-section-label">Account</div>
 
-    <div class="pf-warn-card">
-      <div style="flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-      <div>
-        <strong>Not Logged In</strong>
-        <span>Your progress won't be saved across devices</span>
-      </div>
-    </div>
-
-    <div class="pf-row">
-      <div class="pf-row-icon warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
-      <div class="pf-row-text">
-        <strong>Sign In / Sign Up</strong>
-        <span>Save your routes and logbook</span>
-      </div>
-      <div class="pf-row-arrow">›</div>
-    </div>
+    ${accountSection}
 
     <div class="pf-row" onclick="toggleDarkMode();renderProfile()">
       <div class="pf-row-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
       <div class="pf-row-text">
-        <strong>${document.body.getAttribute('data-theme') === 'light' ? 'Light Mode (on)' : 'Dark Mode (on)'}</strong>
+        <strong>${isLight ? 'Light Mode (on)' : 'Dark Mode (on)'}</strong>
         <span>Toggle light/dark appearance</span>
       </div>
       <div class="pf-row-arrow">›</div>
     </div>
-
   `;
 }
 
@@ -5188,8 +5252,8 @@ map.on('style.load', () => {
       tileSize: 512,
       maxzoom: 14
     });
+    map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
   }
-  map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
   // Re-add atmosphere — dark mode gets night sky, light mode gets a clean sky
   if (!isLight) {
@@ -5210,6 +5274,196 @@ map.on('style.load', () => {
     });
   }
 });
+
+// ── Supabase Auth ─────────────────────────────────────────────
+var SB_URL = 'https://qazcdganlqiimiknitdj.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhemNkZ2FubHFpaW1pa25pdGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MDU3MTYsImV4cCI6MjA5MDA4MTcxNn0.USyldooaReq1bRW1qXRSMi_eZeuz8cfgBN9q7EkB5ec';
+var SB_TOKEN = null;
+var SB_USER  = null; // { id, name, email, licence_type, supervisor }
+
+function sbHdr(extra) {
+  var h = { 'apikey': SB_KEY, 'Content-Type': 'application/json' };
+  if (SB_TOKEN) h['Authorization'] = 'Bearer ' + SB_TOKEN;
+  if (extra) Object.assign(h, extra);
+  return h;
+}
+
+function sbAuth(endpoint, body) {
+  return fetch(SB_URL + '/auth/v1/' + endpoint, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+function sbPatch(table, query, data) {
+  return fetch(SB_URL + '/rest/v1/' + table + '?' + query, {
+    method: 'PATCH',
+    headers: sbHdr({ 'Prefer': 'return=representation' }),
+    body: JSON.stringify(data)
+  }).then(function(r) { return r.json(); }).catch(function() { return []; });
+}
+
+function sbPost(table, data) {
+  return fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: sbHdr({ 'Prefer': 'return=representation' }),
+    body: JSON.stringify(data)
+  }).then(function(r) { return r.json(); }).catch(function() { return []; });
+}
+
+function sbGet(table, query) {
+  return fetch(SB_URL + '/rest/v1/' + table + '?' + query, {
+    headers: sbHdr()
+  }).then(function(r) { return r.json(); }).catch(function() { return []; });
+}
+
+function saveAuthSession(access, refresh, uid) {
+  try {
+    localStorage.setItem('ds_tk', access || '');
+    if (refresh) localStorage.setItem('ds_rt', refresh);
+    if (uid)     localStorage.setItem('ds_uid', uid);
+  } catch(e) {}
+}
+
+function clearAuthSession() {
+  try {
+    localStorage.removeItem('ds_tk');
+    localStorage.removeItem('ds_rt');
+    localStorage.removeItem('ds_uid');
+  } catch(e) {}
+}
+
+function tryRestoreSession(cb) {
+  try {
+    var rt = localStorage.getItem('ds_rt');
+    if (!rt) { cb(false); return; }
+    sbAuth('token?grant_type=refresh_token', { refresh_token: rt }).then(function(r) {
+      if (r && r.access_token && r.user) {
+        SB_TOKEN = r.access_token;
+        SB_USER  = { id: r.user.id, email: r.user.email, name: r.user.user_metadata && r.user.user_metadata.name || '' };
+        saveAuthSession(r.access_token, r.refresh_token || rt, r.user.id);
+        loadProfileFromServer(cb);
+      } else {
+        clearAuthSession();
+        cb(false);
+      }
+    }).catch(function() { cb(false); });
+  } catch(e) { cb(false); }
+}
+
+function loadProfileFromServer(cb) {
+  sbGet('profiles', 'id=eq.' + SB_USER.id + '&select=*').then(function(rows) {
+    if (rows && rows.length) {
+      var p = rows[0];
+      SB_USER.name          = p.name          || SB_USER.name;
+      SB_USER.licence_type  = p.licence_type  || 'L';
+      SB_USER.supervisor    = p.supervisor    || '';
+    }
+    if (cb) cb(true);
+    renderProfile();
+  }).catch(function() { if (cb) cb(false); });
+}
+
+// Show/hide auth modal
+function openAuthModal(tab) {
+  var modal = document.getElementById('sb-auth-modal');
+  modal.style.display = 'flex';
+  requestAnimationFrame(function() { modal.style.opacity = '1'; });
+  switchAuthTab(tab || 'login');
+  document.getElementById('sb-err').textContent = '';
+  document.getElementById('sb-ok').textContent  = '';
+}
+
+function closeAuthModal() {
+  var modal = document.getElementById('sb-auth-modal');
+  modal.style.opacity = '0';
+  setTimeout(function() { modal.style.display = 'none'; }, 260);
+}
+
+function switchAuthTab(tab) {
+  var isLogin = tab === 'login';
+  document.getElementById('sb-tab-login').classList.toggle('sb-tab-active', isLogin);
+  document.getElementById('sb-tab-signup').classList.toggle('sb-tab-active', !isLogin);
+  document.getElementById('sb-form-login').style.display  = isLogin  ? 'block' : 'none';
+  document.getElementById('sb-form-signup').style.display = !isLogin ? 'block' : 'none';
+  document.getElementById('sb-err').textContent = '';
+  document.getElementById('sb-ok').textContent  = '';
+}
+
+function doLogin() {
+  var email = document.getElementById('sb-li-email').value.trim();
+  var pass  = document.getElementById('sb-li-pass').value;
+  if (!email || !pass) { document.getElementById('sb-err').textContent = 'Enter email and password'; return; }
+  var btn = document.getElementById('sb-li-btn');
+  btn.disabled = true; btn.textContent = 'Logging in…';
+  sbAuth('token?grant_type=password', { email: email, password: pass }).then(function(r) {
+    btn.disabled = false; btn.textContent = 'Log In';
+    if (r.error || r.error_description) {
+      document.getElementById('sb-err').textContent = r.error_description || r.error || 'Login failed';
+      return;
+    }
+    SB_TOKEN = r.access_token;
+    SB_USER  = { id: r.user.id, email: r.user.email, name: r.user.user_metadata && r.user.user_metadata.name || '' };
+    saveAuthSession(r.access_token, r.refresh_token, r.user.id);
+    closeAuthModal();
+    loadProfileFromServer(null);
+    showToast('Signed in as ' + (SB_USER.name || SB_USER.email));
+  }).catch(function() {
+    btn.disabled = false; btn.textContent = 'Log In';
+    document.getElementById('sb-err').textContent = 'Network error';
+  });
+}
+
+function doSignup() {
+  var name  = document.getElementById('sb-su-name').value.trim();
+  var email = document.getElementById('sb-su-email').value.trim();
+  var pass  = document.getElementById('sb-su-pass').value;
+  var lt    = document.getElementById('sb-su-lt').value;
+  var sup   = document.getElementById('sb-su-sup').value.trim();
+  if (!name)  { document.getElementById('sb-err').textContent = 'Enter your name'; return; }
+  if (!email || !pass) { document.getElementById('sb-err').textContent = 'Enter email and password'; return; }
+  if (pass.length < 6) { document.getElementById('sb-err').textContent = 'Password must be 6+ characters'; return; }
+  var btn = document.getElementById('sb-su-btn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  sbAuth('signup', { email: email, password: pass, data: { name: name } }).then(function(r) {
+    btn.disabled = false; btn.textContent = 'Create Account';
+    if (r.error || r.msg) {
+      document.getElementById('sb-err').textContent = r.error_description || r.msg || 'Signup failed';
+      return;
+    }
+    if (r.access_token) {
+      SB_TOKEN = r.access_token;
+      SB_USER  = { id: r.user.id, email: email, name: name, licence_type: lt, supervisor: sup };
+      saveAuthSession(r.access_token, r.refresh_token, r.user.id);
+      sbPatch('profiles', 'id=eq.' + r.user.id, { name: name, licence_type: lt, supervisor: sup });
+      closeAuthModal();
+      renderProfile();
+      showToast('Account created — welcome, ' + name + '!');
+    } else if (r.id) {
+      document.getElementById('sb-ok').textContent  = 'Check your email to confirm, then log in.';
+      document.getElementById('sb-err').textContent = '';
+    }
+  }).catch(function() {
+    btn.disabled = false; btn.textContent = 'Create Account';
+    document.getElementById('sb-err').textContent = 'Network error';
+  });
+}
+
+function doSignOut() {
+  if (SB_TOKEN) {
+    fetch(SB_URL + '/auth/v1/logout', {
+      method: 'POST', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_TOKEN }
+    }).catch(function() {});
+  }
+  SB_TOKEN = null; SB_USER = null;
+  clearAuthSession();
+  renderProfile();
+  showToast('Signed out');
+}
+
+// Restore session on page load
+tryRestoreSession(function() { renderProfile(); });
 
 // ── Nav Choice Popup ──────────────────────────────────────────
 let _navChoiceRouteIndex = null; // set when opened from route detail
@@ -5263,11 +5517,242 @@ document.getElementById('loop-modal').addEventListener('click', function(e) {
   if (e.target === this) closeLoopModal();
 });
 
-// Close nav-choice modal on backdrop click
-document.getElementById('nav-choice-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeNavChoice();
+// Close nav-choice modal on backdrop click (element is defined after this script block)
+window.addEventListener('DOMContentLoaded', function() {
+  const ncm = document.getElementById('nav-choice-modal');
+  if (ncm) ncm.addEventListener('click', function(e) {
+    if (e.target === this) closeNavChoice();
+  });
 });
 </script>
+
+<!-- ── Supabase Auth Modal ── -->
+<style>
+  #sb-auth-modal {
+    display: none;
+    position: fixed; inset: 0; z-index: 600;
+    background: rgba(5,9,18,0.78);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .sb-box {
+    width: 100%; max-width: 400px;
+    background: rgba(12,18,30,0.94);
+    backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 22px;
+    padding: 28px 22px 22px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+  }
+  .sb-brand {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem; font-weight: 800;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 18px;
+    letter-spacing: -0.02em;
+  }
+  .sb-tabs {
+    display: flex; gap: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px; padding: 3px;
+    margin-bottom: 20px;
+  }
+  .sb-tab {
+    flex: 1; padding: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 700;
+    border: none; border-radius: 8px;
+    background: transparent; color: rgba(255,255,255,0.4);
+    cursor: pointer; transition: background 0.18s, color 0.18s;
+  }
+  .sb-tab-active {
+    background: var(--gold); color: #0d1117;
+  }
+  .sb-field { margin-bottom: 13px; }
+  .sb-field label {
+    display: block;
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); margin-bottom: 5px;
+  }
+  .sb-field input, .sb-field select {
+    width: 100%; padding: 12px 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    color: var(--text); outline: none;
+    transition: border-color 0.18s, background 0.18s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .sb-field input:focus, .sb-field select:focus {
+    border-color: var(--gold);
+    background: rgba(255,255,255,0.09);
+  }
+  .sb-field input::placeholder { color: rgba(255,255,255,0.25); }
+  .sb-field-row { display: flex; gap: 10px; }
+  .sb-field-row .sb-field { flex: 1; }
+  .sb-err { color: #f87171; font-size: 0.78rem; text-align: center; min-height: 18px; margin-bottom: 4px; }
+  .sb-ok  { color: #4ade80; font-size: 0.78rem; text-align: center; min-height: 18px; margin-bottom: 4px; }
+  .sb-btn-primary {
+    width: 100%; margin-top: 4px;
+    background: var(--gold); color: #0d1117;
+    border: none; border-radius: 12px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.12s;
+    box-shadow: 0 2px 12px rgba(245,197,24,0.35);
+  }
+  .sb-btn-primary:hover { background: #ffd23f; }
+  .sb-btn-primary:active { transform: scale(0.97); }
+  .sb-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  .sb-btn-cancel {
+    width: 100%; margin-top: 8px;
+    background: transparent; color: rgba(255,255,255,0.35);
+    border: none; border-radius: 12px;
+    padding: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .sb-btn-cancel:hover { color: rgba(255,255,255,0.7); }
+  body[data-theme="light"] #sb-auth-modal { background: rgba(240,242,247,0.78); }
+  body[data-theme="light"] .sb-box {
+    background: rgba(255,255,255,0.96);
+    border-color: rgba(0,0,0,0.10);
+  }
+  body[data-theme="light"] .sb-tabs { background: rgba(0,0,0,0.06); }
+  body[data-theme="light"] .sb-field input,
+  body[data-theme="light"] .sb-field select {
+    background: rgba(0,0,0,0.05); color: #0d1117;
+  }
+  body[data-theme="light"] .sb-btn-cancel { color: rgba(0,0,0,0.35); }
+  body[data-theme="light"] .sb-btn-cancel:hover { color: rgba(0,0,0,0.65); }
+
+  /* ── Guest banner (logbook / routes / profile) ── */
+  .guest-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    background: rgba(245,197,24,0.07);
+    border: 1px solid rgba(245,197,24,0.22);
+    border-radius: 14px;
+  }
+  .guest-banner-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: rgba(245,197,24,0.12);
+    border: 1px solid rgba(245,197,24,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--gold);
+  }
+  .guest-banner-text { flex: 1; min-width: 0; }
+  .guest-banner-text strong {
+    display: block;
+    font-size: 0.85rem; font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 2px;
+  }
+  .guest-banner-text span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .guest-banner-btn {
+    flex-shrink: 0;
+    background: var(--gold); color: #0d1117;
+    border: none; border-radius: 9px;
+    padding: 8px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.12s;
+    white-space: nowrap;
+  }
+  .guest-banner-btn:hover { background: #ffd23f; }
+  .guest-banner-btn:active { transform: scale(0.96); }
+  body[data-theme="light"] .guest-banner {
+    background: rgba(180,130,0,0.06);
+    border-color: rgba(180,130,0,0.18);
+  }
+
+  /* ── Dimmed content behind guest banner ── */
+  .guest-dimmed {
+    opacity: 0.28;
+    pointer-events: none;
+    user-select: none;
+    filter: blur(1.5px);
+    transition: opacity 0.3s, filter 0.3s;
+  }
+</style>
+
+<div id="sb-auth-modal">
+  <div class="sb-box">
+    <div class="sb-brand">eLearns.au</div>
+    <div class="sb-tabs">
+      <button class="sb-tab sb-tab-active" id="sb-tab-login"  onclick="switchAuthTab('login')">Log In</button>
+      <button class="sb-tab"               id="sb-tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="sb-form-login">
+      <div class="sb-field">
+        <label>Email</label>
+        <input type="email" id="sb-li-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="sb-field">
+        <label>Password</label>
+        <input type="password" id="sb-li-pass" placeholder="Your password" autocomplete="current-password"
+               onkeypress="if(event.key==='Enter') doLogin()"/>
+      </div>
+      <div class="sb-err" id="sb-err"></div>
+      <div class="sb-ok"  id="sb-ok"></div>
+      <button class="sb-btn-primary" id="sb-li-btn" onclick="doLogin()">Log In</button>
+    </div>
+
+    <!-- Signup form -->
+    <div id="sb-form-signup" style="display:none">
+      <div class="sb-field">
+        <label>Name</label>
+        <input type="text" id="sb-su-name" placeholder="Alex" autocomplete="name"/>
+      </div>
+      <div class="sb-field">
+        <label>Email</label>
+        <input type="email" id="sb-su-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="sb-field">
+        <label>Password</label>
+        <input type="password" id="sb-su-pass" placeholder="Min 6 characters" autocomplete="new-password"/>
+      </div>
+      <div class="sb-field-row">
+        <div class="sb-field">
+          <label>Licence</label>
+          <select id="sb-su-lt">
+            <option value="L">Learner</option>
+            <option value="P1">P1 Red</option>
+            <option value="P2">P2 Green</option>
+          </select>
+        </div>
+        <div class="sb-field">
+          <label>Supervisor</label>
+          <input type="text" id="sb-su-sup" placeholder="Parent" autocomplete="off"/>
+        </div>
+      </div>
+      <button class="sb-btn-primary" id="sb-su-btn" onclick="doSignup()">Create Account</button>
+    </div>
+
+    <button class="sb-btn-cancel" onclick="closeAuthModal()">Cancel</button>
+  </div>
+</div>
 
 <!-- ── Navigation Choice Modal ── -->
 <div id="nav-choice-modal" style="

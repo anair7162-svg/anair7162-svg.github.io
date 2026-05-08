@@ -6,7 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#080c14">
-  <title>eLearns.io</title>
+  <title>eLearns.au</title>
+  <link rel="icon" type="image/png" href="/icon.png">
   <meta name="description" content="NSW Learner &amp; Provisional Route Builder — GPS-tracked practice drives"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <link rel="manifest" href="manifest.json"/>
@@ -21,7 +22,7 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.css" rel="stylesheet"/>
   <style>
 /* =========================================================================
-   eLearns.io — Premium UI refresh
+   eLearns.au — Premium UI refresh
    Original brand palette preserved. Focus: typography, spacing, motion.
    ========================================================================= */
 
@@ -3363,7 +3364,7 @@ html.light .tut-overlay{background:rgba(244,246,251,.75)}
 
   <!-- ───── AUTH SCREEN ───── -->
   <div id="auth">
-    <div class="al">eLearns.io</div>
+    <div class="al">eLearns.au</div>
     <div class="als">NSW Learner &amp; Provisional Route Builder<br>GPS-Tracked · Road-Ready</div>
     <div class="ac">
       <div class="atabs">
@@ -3507,7 +3508,7 @@ html.light .tut-overlay{background:rgba(244,246,251,.75)}
               <span class="ic ic-sm" data-icon="download"></span> Install
               <span class="install-dot"></span>
             </button>
-            <div class="install-fab-hint">Save eLearns.io as an app on your device</div>
+            <div class="install-fab-hint">Save eLearns.au as an app on your device</div>
           </div>
         </div>
       </div>
@@ -3564,7 +3565,7 @@ html.light .tut-overlay{background:rgba(244,246,251,.75)}
               <span class="ic ic-sm" data-icon="download"></span> Install
               <span class="install-dot"></span>
             </button>
-            <div class="install-fab-hint">Save eLearns.io as an app on your device</div>
+            <div class="install-fab-hint">Save eLearns.au as an app on your device</div>
           </div>
         </div>
       </div>
@@ -3686,7 +3687,7 @@ html.light .tut-overlay{background:rgba(244,246,251,.75)}
         </div>
       </div>
 
-      <div style="text-align:center;padding:22px 18px 40px;font-size:11px;color:var(--t3);letter-spacing:.3px">eLearns.io v2.0</div>
+      <div style="text-align:center;padding:22px 18px 40px;font-size:11px;color:var(--t3);letter-spacing:.3px">eLearns.au v2.0</div>
     </div>
 
     <nav class="bnav" id="bnav"></nav>
@@ -3695,7 +3696,7 @@ html.light .tut-overlay{background:rgba(244,246,251,.75)}
     <div class="tut-overlay" id="tut-ov">
       <div class="tut-box">
         <div class="tut-header">
-          <div>Welcome to eLearns.io</div>
+          <div>Welcome to eLearns.au</div>
           <button class="bg" id="tut-x" aria-label="Close"><span data-icon="x" data-icon-size="lg"></span></button>
         </div>
         <div class="tut-scroll">
@@ -3761,7 +3762,7 @@ html.light .tut-overlay{background:rgba(244,246,251,.75)}
           <span class="ic" style="color:var(--acc);width:32px;height:32px" data-icon="download"></span>
         </div>
         <h3 style="margin-bottom:6px;font-size:17px">Add to Home Screen</h3>
-        <p id="install-msg" style="font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:20px">Install eLearns.io for the best experience — works offline and launches like a native app.</p>
+        <p id="install-msg" style="font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:20px">Install eLearns.au for the best experience — works offline and launches like a native app.</p>
         <button class="btn ba bf" id="install-confirm" style="display:none">Add to Home Screen</button>
         <div id="install-ios-steps" style="display:none;text-align:left;margin-bottom:16px">
           <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
@@ -5173,7 +5174,7 @@ function bindStopEvents() {
   if (addBtn) addBtn.addEventListener('click', function() { toast('Search a location or tap the map to add a waypoint', { tone: 'info' }); });
 }
 
-$("sh").innerHTML = '<h3>eLearns.io</h3><p style="font-size:13px;color:var(--t2);margin-bottom:12px;line-height:1.5">Getting your location\u2026</p>';
+$("sh").innerHTML = '<h3>eLearns.au</h3><p style="font-size:13px;color:var(--t2);margin-bottom:12px;line-height:1.5">Getting your location\u2026</p>';
   </script>
 
   <script>
@@ -7195,11 +7196,11 @@ setTimeout(function() {
 
   function triggerInstall() {
     if (isIOS) {
-      if (msg) msg.textContent = 'To install eLearns.io, follow these steps in Safari:';
+      if (msg) msg.textContent = 'To install eLearns.au, follow these steps in Safari:';
       if (iosSteps) iosSteps.style.display = 'block';
       if (confirmBtn) confirmBtn.style.display = 'none';
     } else if (deferredPrompt) {
-      if (msg) msg.textContent = 'Install eLearns.io for the best experience — works offline and launches like a native app.';
+      if (msg) msg.textContent = 'Install eLearns.au for the best experience — works offline and launches like a native app.';
       if (iosSteps) iosSteps.style.display = 'none';
       if (confirmBtn) confirmBtn.style.display = '';
     } else {

@@ -438,7 +438,7 @@ html.light .ni.on{background:rgba(245,197,24,.12);color:#F5C518}
 .ch.on{background:rgba(245,197,24,.12);border-color:rgba(245,197,24,.5);color:#F5C518}
 
 /* ── PROFILE ── */
-.pav{width:92px;height:92px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#ffe066,#F5C518);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;letter-spacing:-1px;color:#0d1117;margin:22px auto 12px;box-shadow:0 0 0 4px rgba(245,197,24,.2),0 4px 20px rgba(245,197,24,.22);animation:pop-in var(--dur-slow) var(--e-spring);transition:transform var(--dur) var(--e-out)}
+.pav{width:92px;height:92px;min-width:92px;min-height:92px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#F5C518,#ffe066,#F5C518);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;letter-spacing:-1px;color:#0d1117;margin:22px auto 12px;box-shadow:0 0 0 4px rgba(245,197,24,.2),0 4px 20px rgba(245,197,24,.22);animation:pop-in var(--dur-slow) var(--e-spring);transition:transform var(--dur) var(--e-out)}
 .pav:hover{transform:scale(1.03)}
 .pnm{text-align:center;font-size:24px;font-weight:900;font-family:'Syne',sans-serif;margin-bottom:4px;letter-spacing:-.6px}
 .pli{text-align:center;font-size:13px;color:var(--t2);margin-bottom:22px;font-weight:500;letter-spacing:-.1px}
@@ -706,7 +706,7 @@ html.light .tut-overlay{background:rgba(240,242,247,.75)}
 .mapboxgl-ctrl-group button:hover{background:rgba(245,197,24,.08)!important}
 #map{position:absolute;inset:0;z-index:1}
 .scr-map.on{position:relative;height:100%;overflow:hidden;display:block;padding-bottom:0}
-#topbar{position:absolute;top:0;left:0;right:0;z-index:100;padding:calc(env(safe-area-inset-top,0px)+8px) 8px 0 8px;pointer-events:none;display:flex;align-items:flex-start;gap:8px}
+#topbar{position:absolute;top:0;left:0;right:0;z-index:100;padding:calc(env(safe-area-inset-top,0px)+20px) 8px 0 8px;pointer-events:none;display:flex;align-items:flex-start;gap:8px}
 #topbar-btns{display:flex;gap:8px;pointer-events:all;flex-shrink:0}
 #mbx-geocoder-wrap{flex:1;position:relative;pointer-events:all;margin-right:52px}
 #mbx-geocoder-wrap .mapboxgl-ctrl-geocoder{width:100%!important;max-width:100%!important;min-width:0!important;background:rgba(8,12,20,.88)!important;backdrop-filter:blur(16px) saturate(1.1)!important;-webkit-backdrop-filter:blur(16px) saturate(1.1)!important;border:1px solid var(--brd2)!important;border-radius:50px!important;box-shadow:var(--sh-md)!important;font-family:var(--f)!important}

@@ -706,7 +706,7 @@ html.light .tut-overlay{background:rgba(240,242,247,.75)}
 .mapboxgl-ctrl-group button:hover{background:rgba(245,197,24,.08)!important}
 #map{position:absolute;inset:0;z-index:1}
 .scr-map.on{position:relative;height:100%;overflow:hidden;display:block;padding-bottom:0}
-#topbar{position:absolute;top:0;left:0;right:0;z-index:100;padding:calc(env(safe-area-inset-top,0px)+30px) 8px 0 8px;pointer-events:none;display:flex;align-items:flex-start;gap:8px}
+#topbar{position:absolute;top:20px;left:0;right:0;z-index:100;padding:0 8px;pointer-events:none;display:flex;align-items:flex-start;gap:8px}
 #topbar-btns{display:flex;gap:8px;pointer-events:all;flex-shrink:0}
 #mbx-geocoder-wrap{flex:1;position:relative;pointer-events:all;margin-right:52px}
 #mbx-geocoder-wrap .mapboxgl-ctrl-geocoder{width:100%!important;max-width:100%!important;min-width:0!important;background:rgba(8,12,20,.88)!important;backdrop-filter:blur(16px) saturate(1.1)!important;-webkit-backdrop-filter:blur(16px) saturate(1.1)!important;border:1px solid var(--brd2)!important;border-radius:50px!important;box-shadow:var(--sh-md)!important;font-family:var(--f)!important}

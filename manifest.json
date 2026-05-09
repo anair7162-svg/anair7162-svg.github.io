@@ -1,6 +1,6 @@
 {
-  "name": "eLearns.io",
-  "short_name": "eLearns.io",
+  "name": "eLearns.au",
+  "short_name": "eLearns.au",
   "description": "NSW Learner & Provisional Route Builder",
   "start_url": "/",
   "display": "standalone",

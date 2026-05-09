@@ -1372,7 +1372,12 @@ function loadData() {
     sbg("log_entries", "user_id=eq." + S.uid + "&select=*&order=created_at.desc&limit=200"),
     sbg("saved_routes", "user_id=eq." + S.uid + "&select=*&order=created_at.desc&limit=100")
   ]).then(function(r) {
-    if (r[0] && r[0].length) S.profile = r[0][0];
+    if (r[0] && r[0].length) {
+      var savedPfp = S.profile.pfp || "";
+      S.profile = r[0][0];
+      try { var lsPfp = localStorage.getItem("ll-pfp"); if (lsPfp) savedPfp = lsPfp; } catch(x) {}
+      if (savedPfp) S.profile.pfp = savedPfp;
+    }
     mergeServerLogs(r[1] || []);
     mergeServerRoutes(r[2] || []);
     saveLogsLocal();

@@ -162,6 +162,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .bw{background:var(--wg);color:var(--w);border:1px solid rgba(240,160,64,.18)}
 .bw:hover{background:rgba(240,160,64,.16)}
 .bd{background:var(--dg);color:var(--d);border:1px solid rgba(240,80,80,.18)}
+.bd:hover{background:rgba(240,80,80,.22);border-color:rgba(240,80,80,.45);color:#ff3333;}
 .bsm{padding:10px 14px;font-size:12px;border-radius:var(--r1)}
 .bf{width:100%}
 .bg{background:none;color:var(--t2);padding:8px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;transition:background var(--dur-fast) var(--e-out),color var(--dur-fast) var(--e-out)}

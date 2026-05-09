@@ -1813,7 +1813,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }, function() { dismissToast('loc-find'); toast('Could not get location', { tone: 'err' }); }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   });
   var locBtn2 = document.getElementById('btn-locate');
-  if (locBtn2) locBtn2.addEventListener('click', function() { var lb = document.getElementById('lbtn'); if (lb) lb.click(); });
+  if (locBtn2) locBtn2.addEventListener('click', function() {
+    if (S.userLL) {
+      setFollowMode(true);
+      map.flyTo({ center: [S.userLL.lng, S.userLL.lat], zoom: Math.max(map.getZoom(), 15), speed: 1.2 });
+      toast('Following your location', { tone: 'ok', icon: 'crosshair' });
+      return;
+    }
+    if (!navigator.geolocation) { toast('GPS not available', { tone: 'err' }); return; }
+    toast('Finding location\u2026', { tone: 'info', icon: 'loader', id: 'loc-find' });
+    navigator.geolocation.getCurrentPosition(function(p) {
+      dismissToast('loc-find');
+      S.userLL = { lat: p.coords.latitude, lng: p.coords.longitude };
+      S.startLL = S.userLL;
+      userLat = S.userLL.lat; userLng = S.userLL.lng;
+      geocoder.setProximity({ longitude: userLng, latitude: userLat });
+      updateLiveMarker(S.userLL, p.coords.heading);
+      map.flyTo({ center: [userLng, userLat], zoom: 15, speed: 1.2 });
+      toast('Location updated', { tone: 'ok', icon: 'check' });
+    }, function() { dismissToast('loc-find'); toast('Could not get location', { tone: 'err' }); },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  });
 });
 
 // ── Route clearing ────────────────────────────────────────────
@@ -2397,7 +2417,7 @@ function showResult() {
   h += '<div class="ar" style="margin-top:6px">';
   h += '<button class="btn bs bsm" id="rreb">Rebuild</button>';
   h += '<button class="btn bs bsm" id="rnew">' + icn("plus", "sm") + ' New</button>';
-  h += '<button class="btn bs bsm" id="rclr">Clear</button>';
+  h += '<button class="btn bd bsm" id="rclr">Clear</button>';
   h += '</div>';
 
   $("sh").innerHTML = h;

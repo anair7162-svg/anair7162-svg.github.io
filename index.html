@@ -9,12 +9,14 @@
   <title>eLearns.au</title>
   <link rel="icon" type="image/png" href="/icon.png">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="new-styles.css">
   <link rel="apple-touch-icon" href="/icon.png">
   <meta name="description" content="NSW Learner &amp; Provisional Route Builder — GPS-tracked practice drives"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <link rel="manifest" href="manifest.json"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&family=DM+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Mapbox GL JS -->
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet"/>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
@@ -22,8 +24,16 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.3.1/mapbox-gl-directions.css" rel="stylesheet"/>
   <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.css" rel="stylesheet"/>
+  <!-- Google OAuth -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Web Speech API for voice -->
+  <script src="https://cdn.jsdelivr.net/npm/annyang@2.6.1/annyang.min.js"></script>
+  <!-- Google Sheets API -->
+  <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
+
+  <div id="nav-overlay" style="display:none"></div>
 
   <!-- ───── AUTH SCREEN ───── -->
   <div id="auth">
@@ -35,6 +45,12 @@
         <button class="atab" id="at-su">Sign Up</button>
       </div>
       <div class="af on" id="af-li">
+        <div id="google-signin-btn" style="margin-bottom: 16px; display: flex; justify-content: center;"></div>
+        <div style="display: flex; align-items: center; margin-bottom: 16px; gap: 8px;">
+          <div style="flex: 1; height: 1px; background: var(--brd);"></div>
+          <div style="font-size: 11px; color: var(--t3);">OR</div>
+          <div style="flex: 1; height: 1px; background: var(--brd);"></div>
+        </div>
         <div class="fg">
           <label class="fl">Email</label>
           <input type="email" class="fi" id="li-e" placeholder="you@example.com" autocomplete="email"/>
@@ -109,34 +125,51 @@
   </div>
   <div class="rd-panel" id="rd-panel-content"></div>
 </div>
-<!-- ─── NAVIGATION OVERLAY ─── -->
-<div id="nav-overlay">
-  <div id="nav-top-bar">
-    <div id="nav-instruction-icon">↑</div>
-    <div id="nav-instruction-text">
-      <div id="nav-instruction-main">Head north</div>
-      <div id="nav-instruction-dist">—</div>
+<!-- Navigation heads-up panel -->
+<div class="navp" id="navp">
+  <div class="nav-top">
+    <div class="nav-dir" id="nd"><span data-icon="arrow_up"></span></div>
+    <div class="nav-info">
+      <div class="nav-dist" id="ndist">--</div>
+      <div class="nav-road" id="nroad">--</div>
+      <div class="nav-next" id="nnext"></div>
     </div>
-    <button id="nav-end-btn" onclick="endDrive()">End Drive</button>
+    <button class="bg" id="nx" style="color:#fff" aria-label="Exit navigation"><span data-icon="x" data-icon-size="lg"></span></button>
   </div>
-  <div id="nav-bottom-bar">
-    <div class="nav-eta-block">
-      <div class="nav-eta-val" id="nav-eta">—</div>
-      <div class="nav-eta-lbl">Arrival</div>
-    </div>
-    <div class="nav-divider"></div>
-    <div class="nav-eta-block">
-      <div class="nav-eta-val" id="nav-remain-dist">—</div>
-      <div class="nav-eta-lbl">Remaining</div>
-    </div>
-    <div class="nav-divider"></div>
-    <div class="nav-eta-block">
-      <div class="nav-eta-val" id="nav-remain-time">—</div>
-      <div class="nav-eta-lbl">Duration</div>
-    </div>
+  <div class="nav-eta">
+    <div class="nav-eta-item"><span class="ic" data-icon="clock"></span><span class="nav-eta-val" id="neta">--</span> min</div>
+    <div class="nav-eta-item"><span class="ic" data-icon="route"></span><span class="nav-eta-val" id="nkm">--</span> km</div>
+    <div class="nav-eta-item"><span class="ic" data-icon="flag"></span><span class="nav-eta-val" id="neta-clock">--</span></div>
+  </div>
+  <div class="nav-prog">
+    <div class="nav-prog-bar" id="nav-prog-bar" style="width:0%"></div>
   </div>
 </div>
       <div class="sorb" id="sorb"><div class="sn" id="snum">0</div><div class="su">km/h</div><div class="sorb-acc" id="sorb-acc"></div></div>
+      
+      <!-- PRACTICE MODES PANEL -->
+      <div id="practice-modes-panel" style="display:none;position:absolute;bottom:80px;left:12px;right:12px;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--r2);padding:12px;z-index:40;box-shadow:var(--s2)">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.1px">Practice Modes</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="mode-btn" id="btn-voice-mode" title="Driver Instructor Mode">
+            <span class="ic" style="margin-bottom:6px" data-icon="mic"></span>
+            <span style="font-size:11px;font-weight:600">Voice Mode</span>
+          </button>
+          <button class="mode-btn" id="btn-parking-mode" title="Parking Practice Mode">
+            <span class="ic" style="margin-bottom:6px" data-icon="navigation"></span>
+            <span style="font-size:11px;font-weight:600">Parking</span>
+          </button>
+          <button class="mode-btn" id="btn-route-mode" title="Route Mode - 3 Routes">
+            <span class="ic" style="margin-bottom:6px" data-icon="route"></span>
+            <span style="font-size:11px;font-weight:600">3 Routes</span>
+          </button>
+          <button class="mode-btn" id="btn-specific-mode" title="Specific Mode - Residential Focus">
+            <span class="ic" style="margin-bottom:6px" data-icon="layers"></span>
+            <span style="font-size:11px;font-weight:600">Specific</span>
+          </button>
+        </div>
+      </div>
+
       <div class="nav-bar" id="nbar">
         <button class="btn ba" style="flex:1" id="nlog">Log This Drive</button>
         <button class="btn bs" style="flex:none;padding:12px 14px" id="nstop">End Drive</button>
@@ -207,8 +240,15 @@
         <div class="km-badge" id="km-badge" style="display:none">+ <span id="km-last">0</span></div>
       </div>
 
+      <!-- Smart Practice Suggestions -->
+      <div id="practice-suggestions" style="padding:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:12px">Recommended Practice</div>
+        <div id="suggestions-list" style="display:grid;gap:10px"></div>
+      </div>
+
       <div style="padding:0 16px;margin-bottom:8px">
         <button class="btn ba bf" id="adlog"><span class="ic" data-icon="plus" data-icon-size="sm"></span> Log Drive Session</button>
+        <button class="btn bs bf" id="export-sheets" style="margin-top:8px"><span class="ic" data-icon="download" data-icon-size="sm"></span> Export to Google Sheets</button>
       </div>
 
       <div class="st">Recent</div>
@@ -445,9 +485,114 @@
       </div>
     </div>
 
-    <!-- LOG ENTRY DETAIL MODAL -->
-    <div class="modal" id="mld">
-      <div class="mbox" id="mld-inner"></div>
+    <!-- VOICE NAVIGATION MODAL -->
+    <div class="modal" id="voice-mode-modal">
+      <div class="mbox">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3><span class="ic" data-icon="mic"></span> Driver Instructor Mode</h3>
+          <button class="bg" id="voice-close" aria-label="Close"><span data-icon="x" data-icon-size="lg"></span></button>
+        </div>
+        <p style="font-size:13px;color:var(--t2);margin-bottom:16px">Voice-guided navigation with real-time feedback. Say commands like "next turn", "slow down", or "parking spot".</p>
+        <div id="voice-status" style="padding:12px;background:var(--accg);border:1px solid rgba(245,197,24,.2);border-radius:var(--r2);font-size:12px;color:var(--acc);margin-bottom:16px">
+          <span class="ic ic-sm" style="vertical-align:middle;margin-right:6px" data-icon="volume_2"></span> Ready to listen...
+        </div>
+        <div class="frow">
+          <button class="btn ba bf" id="voice-start">Start Listening</button>
+          <button class="btn bs bf" id="voice-stop">Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARKING PRACTICE MODE MODAL -->
+    <div class="modal" id="parking-mode-modal">
+      <div class="mbox">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3><span class="ic" data-icon="navigation"></span> Parking Practice Mode</h3>
+          <button class="bg" id="parking-close" aria-label="Close"><span data-icon="x" data-icon-size="lg"></span></button>
+        </div>
+        <p style="font-size:13px;color:var(--t2);margin-bottom:16px">Find nearby parking lots that are empty and suitable for practice.</p>
+        <div class="fg">
+          <label class="fl">Practice Type</label>
+          <select class="fi" id="parking-type">
+            <option value="straight">Straight Parking (Quiet Streets)</option>
+            <option value="angle">Angle Parking</option>
+            <option value="perpendicular">Perpendicular Parking (Tight Spaces)</option>
+            <option value="reverse">Reverse Parking</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Distance (km)</label>
+          <input type="number" class="fi" id="parking-distance" placeholder="2" min="0.5" step="0.5" value="2"/>
+        </div>
+        <div id="parking-results" style="margin-top:16px"></div>
+        <button class="btn ba bf" id="parking-find" style="margin-top:12px">Find Parking Lots</button>
+      </div>
+    </div>
+
+    <!-- ROUTE MODE MODAL (3 Routes) -->
+    <div class="modal" id="route-mode-modal">
+      <div class="mbox">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3><span class="ic" data-icon="route"></span> Route Mode</h3>
+          <button class="bg" id="route-close" aria-label="Close"><span data-icon="x" data-icon-size="lg"></span></button>
+        </div>
+        <p style="font-size:13px;color:var(--t2);margin-bottom:16px">Generate 3 optimized routes with different characteristics.</p>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">Route Type</label>
+            <select class="fi" id="route-type">
+              <option value="loop">Loop Route</option>
+              <option value="direct">Direct Route</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Duration (min)</label>
+            <input type="number" class="fi" id="route-duration" placeholder="30" min="10" step="5" value="30"/>
+          </div>
+        </div>
+        <div style="background:var(--accg);padding:12px;border-radius:var(--r2);margin-bottom:16px;font-size:12px;color:var(--acc)">
+          <strong>Routes generated:</strong><br>
+          1️⃣ Most Learning (complex roads, traffic)<br>
+          2️⃣ Direct Route (fastest)<br>
+          3️⃣ Time-Taking (scenic, skill-building)
+        </div>
+        <button class="btn ba bf" id="route-generate">Generate Routes</button>
+        <div id="route-results" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- SPECIFIC MODE MODAL (Residential Focus) -->
+    <div class="modal" id="specific-mode-modal">
+      <div class="mbox">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3><span class="ic" data-icon="layers"></span> Specific Mode</h3>
+          <button class="bg" id="specific-close" aria-label="Close"><span data-icon="x" data-icon-size="lg"></span></button>
+        </div>
+        <p style="font-size:13px;color:var(--t2);margin-bottom:16px">Focus on specific road types with color-coded complexity analysis.</p>
+        <div class="fg">
+          <label class="fl">Road Types</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--r1);cursor:pointer;border:1px solid var(--brd)">
+              <input type="checkbox" id="road-residential" checked style="cursor:pointer"/>
+              <span style="font-size:12px">Residential</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--r1);cursor:pointer;border:1px solid var(--brd)">
+              <input type="checkbox" id="road-main" style="cursor:pointer"/>
+              <span style="font-size:12px">Main Roads</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--r1);cursor:pointer;border:1px solid var(--brd)">
+              <input type="checkbox" id="road-highway" style="cursor:pointer"/>
+              <span style="font-size:12px">Highway</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--r1);cursor:pointer;border:1px solid var(--brd)">
+              <input type="checkbox" id="road-motorway" style="cursor:pointer"/>
+              <span style="font-size:12px">Motorway</span>
+            </label>
+          </div>
+        </div>
+        <div id="road-complexity-chart" style="margin:16px 0;padding:12px;background:var(--bg3);border-radius:var(--r2)"></div>
+        <button class="btn ba bf" id="specific-generate">Generate Route</button>
+      </div>
     </div>
 
     <!-- GOOGLE MAPS SUGGESTION MODAL -->
@@ -757,9 +902,18 @@ function clearSession() {
 
 function tryRestoreSession(cb) {
   try {
+    var tk = localStorage.getItem("el_tk");
     var rt = localStorage.getItem("el_rt");
     var uid = localStorage.getItem("el_uid");
     if (!rt || !uid) { cb(false); return; }
+
+    // Optimistically use cached token first — avoids waiting for a network round-trip
+    if (tk && uid) {
+      TK = tk;
+      S.uid = uid;
+    }
+
+    // Always refresh in background to get a fresh token and confirm session is valid
     sba("token?grant_type=refresh_token", {refresh_token: rt}).then(function(r) {
       if (r && r.access_token && r.user) {
         TK = r.access_token;
@@ -767,6 +921,8 @@ function tryRestoreSession(cb) {
         saveSession(r.access_token, r.refresh_token || rt, r.user.id);
         cb(true);
       } else {
+        TK = null;
+        S.uid = null;
         clearSession();
         cb(false);
       }
@@ -923,6 +1079,679 @@ function fd(d) {
     });
   } catch (e) { return d || ""; }
 }
+
+// ============================================================================
+// eLearns.au v3.0 - Advanced Practice Modes & Features
+// Google OAuth, Voice Navigation, Parking Lots, Smart Suggestions, Google Sheets
+// ============================================================================
+
+// Configuration
+const CONFIG = {
+  GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+  MAPBOX_TOKEN: 'YOUR_MAPBOX_TOKEN',
+  SHEETS_API_KEY: 'YOUR_SHEETS_API_KEY',
+  PARKING_SEARCH_RADIUS: 2000, // meters
+  ROUTE_MODES: {
+    LEARNING_POTENTIAL: 'learning',
+    DIRECT: 'direct',
+    TIME_TAKING: 'time_taking'
+  }
+};
+
+// ===== GOOGLE OAUTH =====
+function initGoogleSignIn() {
+  google.accounts.id.initialize({
+    client_id: CONFIG.GOOGLE_CLIENT_ID,
+    callback: handleGoogleSignInResponse
+  });
+
+  google.accounts.id.renderButton(
+    document.getElementById('google-signin-btn'),
+    { theme: 'dark', size: 'large', text: 'signin_with' }
+  );
+}
+
+function handleGoogleSignInResponse(response) {
+  // response.credential contains JWT
+  const payload = JSON.parse(atob(response.credential.split('.')[1]));
+  
+  console.log('Google Sign-In:', {
+    name: payload.name,
+    email: payload.email,
+    picture: payload.picture
+  });
+
+  // Store user data
+  localStorage.setItem('user_google', JSON.stringify({
+    id: payload.sub,
+    name: payload.name,
+    email: payload.email,
+    picture: payload.picture,
+    token: response.credential
+  }));
+
+  // Show success and navigate to app
+  showNotification('Signed in successfully!');
+  goToApp();
+}
+
+// ===== VOICE NAVIGATION (Driver Instructor Mode) =====
+class VoiceNavigationMode {
+  constructor() {
+    this.listening = false;
+    this.commands = {
+      'next turn': this.announceNextTurn,
+      'where am i': this.announceLocation,
+      'slow down': this.warnSpeed,
+      'speed up': this.warnSpeech,
+      'parking spot': this.findParkingSpots,
+      'directions': this.repeatDirections,
+      'exit': this.stopListening
+    };
+  }
+
+  init() {
+    if (!annyang) {
+      showNotification('Voice navigation not supported in this browser');
+      return;
+    }
+
+    // Set up annyang commands
+    annyang.addCommands(this.commands);
+    
+    document.getElementById('voice-start').addEventListener('click', () => this.start());
+    document.getElementById('voice-stop').addEventListener('click', () => this.stop());
+  }
+
+  start() {
+    this.listening = true;
+    annyang.start();
+    updateVoiceStatus('🎤 Listening... say a command');
+    this.updateStatusAnimation();
+  }
+
+  stop() {
+    this.listening = false;
+    annyang.abort();
+    updateVoiceStatus('Ready to listen...');
+  }
+
+  announceNextTurn = () => {
+    const nextTurn = document.getElementById('nnext')?.textContent || 'No next turn';
+    speak(`Next turn: ${nextTurn}`);
+  }
+
+  announceLocation = () => {
+    const road = document.getElementById('nroad')?.textContent || 'Unknown location';
+    speak(`You are on ${road}`);
+  }
+
+  warnSpeed = () => {
+    const speed = document.getElementById('snum')?.textContent || '0';
+    if (parseInt(speed) > 60) {
+      speak('Reduce speed');
+    } else {
+      speak('Speed is good');
+    }
+  }
+
+  warnSpeech = () => {
+    speak('Increasing speed safely');
+  }
+
+  findParkingSpots = () => {
+    document.getElementById('btn-parking-mode').click();
+    speak('Opening parking practice mode');
+  }
+
+  repeatDirections = () => {
+    this.announceNextTurn();
+  }
+
+  stopListening = () => {
+    this.stop();
+    speak('Voice mode closed');
+  }
+
+  updateStatusAnimation() {
+    const status = document.getElementById('voice-status');
+    if (this.listening && status) {
+      status.innerHTML = '<span class="ic" data-icon="volume_2" style="vertical-align:middle;margin-right:6px"></span> Listening... <span class="voice-waveform"><span class="wave"></span><span class="wave"></span><span class="wave"></span></span>';
+    }
+  }
+}
+
+function speak(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    speechSynthesis.speak(utterance);
+  }
+}
+
+function updateVoiceStatus(message) {
+  const status = document.getElementById('voice-status');
+  if (status) {
+    status.innerHTML = `<span class="ic ic-sm" style="vertical-align:middle;margin-right:6px" data-icon="volume_2"></span> ${message}`;
+  }
+}
+
+// ===== PARKING PRACTICE MODE =====
+class ParkingPracticeMode {
+  constructor() {
+    this.parkingLots = [];
+    this.selectedLot = null;
+  }
+
+  init() {
+    document.getElementById('parking-find')?.addEventListener('click', () => this.findNearbyLots());
+  }
+
+  async findNearbyLots() {
+    const type = document.getElementById('parking-type').value;
+    const distance = parseFloat(document.getElementById('parking-distance').value) * 1000;
+
+    try {
+      // Use OpenStreetMap data or your API
+      const lots = await this.fetchParkingData(distance, type);
+      this.displayParkingLots(lots);
+    } catch (error) {
+      showNotification('Error finding parking lots');
+      console.error(error);
+    }
+  }
+
+  async fetchParkingData(radius, type) {
+    // Placeholder - replace with real API call
+    // This would fetch from your backend or OSM Overpass API
+    const mockLots = [
+      {
+        id: 'lot1',
+        name: 'Quiet Residential Street - Miller Ave',
+        distance: 0.8,
+        difficulty: 'easy',
+        available: 8,
+        spaces: 15,
+        hours: '24/7'
+      },
+      {
+        id: 'lot2',
+        name: 'Condensed Street Parking - Oak Road',
+        distance: 1.2,
+        difficulty: 'medium',
+        available: 3,
+        spaces: 12,
+        hours: '24/7'
+      },
+      {
+        id: 'lot3',
+        name: 'Tight Angle Parking - Park Lane',
+        distance: 1.5,
+        difficulty: 'hard',
+        available: 2,
+        spaces: 8,
+        hours: '8am-6pm'
+      }
+    ];
+    return mockLots;
+  }
+
+  displayParkingLots(lots) {
+    const container = document.getElementById('parking-results');
+    container.innerHTML = '';
+
+    lots.forEach(lot => {
+      const item = document.createElement('div');
+      item.className = 'parking-item';
+      item.innerHTML = `
+        <div class="parking-item-info">
+          <div class="parking-item-name">${lot.name}</div>
+          <div class="parking-item-meta">
+            <span class="parking-item-distance">📍 ${lot.distance} km</span>
+            <span class="parking-item-difficulty difficulty-${lot.difficulty}">${lot.difficulty.toUpperCase()}</span>
+            <span>Available: ${lot.available}/${lot.spaces}</span>
+          </div>
+        </div>
+        <button class="btn bs" style="flex:none;padding:8px 12px;font-size:11px">Route</button>
+      `;
+      item.addEventListener('click', () => this.selectLot(lot));
+      container.appendChild(item);
+    });
+  }
+
+  selectLot(lot) {
+    this.selectedLot = lot;
+    showNotification(`Selected: ${lot.name}`);
+    // Navigate to this location on map
+  }
+}
+
+// ===== ROUTE MODE (3 Routes) =====
+class RouteModeGenerator {
+  constructor() {
+    this.routes = [];
+  }
+
+  init() {
+    document.getElementById('route-generate')?.addEventListener('click', () => this.generateRoutes());
+  }
+
+  async generateRoutes() {
+    const type = document.getElementById('route-type').value;
+    const duration = parseInt(document.getElementById('route-duration').value);
+
+    const routes = [
+      {
+        id: 'learning',
+        name: 'Most Learning Potential',
+        description: 'Complex roads with traffic lights, roundabouts, and heavy traffic',
+        duration: duration,
+        complexity: 95,
+        distance: Math.round(duration * 0.8),
+        characteristics: ['Multiple roundabouts', 'Heavy traffic', 'Complex intersections', 'Traffic lights']
+      },
+      {
+        id: 'direct',
+        name: 'Direct Route (Fastest)',
+        description: 'Straight paths with main roads and highways',
+        duration: Math.round(duration * 0.6),
+        complexity: 40,
+        distance: Math.round(duration * 0.6),
+        characteristics: ['Straight roads', 'Main routes', 'Fast speed limits', 'Minimal turns']
+      },
+      {
+        id: 'time_taking',
+        name: 'Time-Taking (Scenic)',
+        description: 'Residential streets with varied speed limits for skill-building',
+        duration: Math.round(duration * 1.4),
+        complexity: 60,
+        distance: Math.round(duration * 1.2),
+        characteristics: ['Residential streets', 'Parking practice', 'School zones', 'Varied speed limits']
+      }
+    ];
+
+    this.routes = routes;
+    this.displayRoutes(routes);
+  }
+
+  displayRoutes(routes) {
+    const container = document.getElementById('route-results');
+    container.innerHTML = '';
+
+    routes.forEach((route, index) => {
+      const option = document.createElement('div');
+      option.className = 'route-option';
+      option.innerHTML = `
+        <div class="route-option-number">${index + 1}. ${route.id.toUpperCase()}</div>
+        <div class="route-option-title">
+          🛣️ ${route.name}
+        </div>
+        <div class="route-option-meta">
+          <div class="route-meta-item">
+            <span class="ic ic-sm" data-icon="clock"></span>
+            <span>${route.duration} min</span>
+          </div>
+          <div class="route-meta-item">
+            <span class="ic ic-sm" data-icon="route"></span>
+            <span>${route.distance} km</span>
+          </div>
+          <div class="route-meta-item">
+            <span>Complexity: <strong>${route.complexity}%</strong></span>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--t3)">
+          ${route.characteristics.join(' • ')}
+        </div>
+      `;
+      option.addEventListener('click', () => this.selectRoute(route));
+      container.appendChild(option);
+    });
+  }
+
+  selectRoute(route) {
+    showNotification(`Selected: ${route.name}`);
+    // Load this route on map
+  }
+}
+
+// ===== SPECIFIC MODE (Residential Focus with Complexity) =====
+class SpecificModeGenerator {
+  constructor() {
+    this.selectedRoads = ['residential'];
+    this.complexityScores = {
+      residential: 30,
+      main: 65,
+      highway: 85,
+      motorway: 95
+    };
+  }
+
+  init() {
+    document.getElementById('specific-generate')?.addEventListener('click', () => this.generateRoute());
+    this.updateComplexityChart();
+    
+    ['residential', 'main', 'highway', 'motorway'].forEach(road => {
+      document.getElementById(`road-${road}`)?.addEventListener('change', () => this.updateComplexityChart());
+    });
+  }
+
+  updateComplexityChart() {
+    const chart = document.getElementById('road-complexity-chart');
+    chart.innerHTML = '';
+
+    ['residential', 'main', 'highway', 'motorway'].forEach(road => {
+      const isSelected = document.getElementById(`road-${road}`).checked;
+      const complexity = this.complexityScores[road];
+      const roadLabels = { residential: 'Residential', main: 'Main Roads', highway: 'Highway', motorway: 'Motorway' };
+      
+      if (isSelected) {
+        const bar = document.createElement('div');
+        bar.className = 'complexity-bar';
+        bar.innerHTML = `
+          <div class="complexity-label">${roadLabels[road]}</div>
+          <div class="complexity-bar-container">
+            <div class="complexity-bar-fill complexity-${road}" style="width:${complexity}%">
+              <span class="complexity-value">${complexity}%</span>
+            </div>
+          </div>
+        `;
+        chart.appendChild(bar);
+      }
+    });
+  }
+
+  generateRoute() {
+    this.selectedRoads = ['residential', 'main', 'highway', 'motorway'].filter(
+      road => document.getElementById(`road-${road}`).checked
+    );
+
+    if (this.selectedRoads.length === 0) {
+      showNotification('Select at least one road type');
+      return;
+    }
+
+    const avgComplexity = this.calculateAverageComplexity();
+    showNotification(`Generated route with ${avgComplexity}% complexity`);
+    // Generate and load route on map
+  }
+
+  calculateAverageComplexity() {
+    let total = 0;
+    this.selectedRoads.forEach(road => {
+      total += this.complexityScores[road];
+    });
+    return Math.round(total / this.selectedRoads.length);
+  }
+}
+
+// ===== LOGBOOK WITH SMART SUGGESTIONS =====
+class SmartPracticeSuggestions {
+  constructor() {
+    this.suggestions = [];
+  }
+
+  init() {
+    this.generateSuggestions();
+  }
+
+  generateSuggestions() {
+    const suggestions = [
+      {
+        skill: 'Curb-side Parking',
+        level: 'beginner',
+        description: 'Practice parking between lines',
+        location: 'Quiet residential street - Miller Ave',
+        complexity: 'Easy',
+        icon: '🅿️'
+      },
+      {
+        skill: 'Reverse Parking',
+        level: 'intermediate',
+        description: 'Reverse into tight spaces',
+        location: 'Condensed parking area - Oak Road',
+        complexity: 'Medium',
+        icon: '⬅️'
+      },
+      {
+        skill: 'Heavy Traffic',
+        level: 'advanced',
+        description: 'Navigate peak hour congestion',
+        location: 'Main roads during rush hours',
+        complexity: 'Hard',
+        icon: '🚗'
+      },
+      {
+        skill: 'Roundabouts',
+        level: 'intermediate',
+        description: 'Master multi-lane roundabouts',
+        location: 'Complex intersections - Central District',
+        complexity: 'Medium',
+        icon: '🔄'
+      }
+    ];
+
+    this.displaySuggestions(suggestions);
+  }
+
+  displaySuggestions(suggestions) {
+    const container = document.getElementById('suggestions-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+
+    suggestions.forEach(suggestion => {
+      const card = document.createElement('div');
+      card.className = 'suggestion-card';
+      card.innerHTML = `
+        <div class="suggestion-icon">${suggestion.icon}</div>
+        <div class="suggestion-content">
+          <div class="suggestion-title">${suggestion.skill}</div>
+          <div class="suggestion-desc">${suggestion.description}</div>
+          <div class="suggestion-desc" style="margin-top:4px;color:var(--acc);">📍 ${suggestion.location}</div>
+          <span class="suggestion-level">${suggestion.level} • ${suggestion.complexity}</span>
+        </div>
+      `;
+      card.addEventListener('click', () => this.selectSuggestion(suggestion));
+      container.appendChild(card);
+    });
+  }
+
+  selectSuggestion(suggestion) {
+    showNotification(`Practice suggestion: ${suggestion.skill} at ${suggestion.location}`);
+    // Navigate to suggested location
+  }
+}
+
+// ===== GOOGLE SHEETS EXPORT =====
+class GoogleSheetsExporter {
+  constructor() {
+    this.isAuthorized = false;
+  }
+
+  init() {
+    document.getElementById('export-sheets')?.addEventListener('click', () => this.exportLogbook());
+  }
+
+  async exportLogbook() {
+    if (!this.isAuthorized) {
+      await this.authorize();
+    }
+
+    const logbookData = this.collectLogbookData();
+    await this.createSheet(logbookData);
+  }
+
+  async authorize() {
+    // Implement Google Sheets OAuth
+    // This would be handled through your backend
+    showNotification('Connecting to Google Sheets...');
+    this.isAuthorized = true;
+  }
+
+  collectLogbookData() {
+    // Get all logbook entries from localStorage or database
+    const entries = JSON.parse(localStorage.getItem('logbook_entries') || '[]');
+    
+    return {
+      spreadsheetName: `eLearns Logbook - ${new Date().toLocaleDateString()}`,
+      headers: ['Date', 'Duration (min)', 'Distance (km)', 'Day Hours', 'Night Hours', 'Road Types', 'Notes'],
+      rows: entries.map(entry => [
+        entry.date,
+        entry.duration,
+        entry.distance,
+        entry.dayHours,
+        entry.nightHours,
+        entry.roadTypes?.join(', ') || '',
+        entry.notes
+      ])
+    };
+  }
+
+  async createSheet(data) {
+    try {
+      const response = await fetch('/api/create-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: data.spreadsheetName,
+          data: [data.headers, ...data.rows]
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        showNotification('✅ Exported to Google Sheets!');
+        window.open(result.spreadsheet_url, '_blank');
+      } else {
+        throw new Error('Failed to create sheet');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      showNotification('Failed to export to Google Sheets');
+    }
+  }
+}
+
+// ===== COMPLEXITY ANALYSIS (API Integration) =====
+class ComplexityAnalyzer {
+  async analyzeLocation(lat, lon) {
+    try {
+      // Use real-time traffic data, weather, etc.
+      const complexity = await this.fetchComplexityData(lat, lon);
+      return complexity;
+    } catch (error) {
+      console.error('Complexity analysis error:', error);
+      return 50; // Default medium complexity
+    }
+  }
+
+  async fetchComplexityData(lat, lon) {
+    // Would integrate with:
+    // - Google Maps Traffic API
+    // - Weather API
+    // - Local event data
+    // - Historical traffic patterns
+
+    const mockComplexity = Math.floor(Math.random() * 100);
+    return mockComplexity;
+  }
+
+  getComplexityLevel(score) {
+    if (score < 30) return 'Easy';
+    if (score < 60) return 'Medium';
+    if (score < 80) return 'Hard';
+    return 'Extreme';
+  }
+}
+
+// ===== UI UTILITIES =====
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--acc);
+    color: #0d1117;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 10000;
+    animation: slide-down 0.3s ease-out;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.remove(), 3000);
+}
+
+function goToApp() {
+  document.getElementById('auth').classList.add('gone');
+  document.getElementById('app').classList.add('on');
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize all features
+  initGoogleSignIn();
+  
+  const voiceMode = new VoiceNavigationMode();
+  voiceMode.init();
+  
+  const parkingMode = new ParkingPracticeMode();
+  parkingMode.init();
+  
+  const routeMode = new RouteModeGenerator();
+  routeMode.init();
+  
+  const specificMode = new SpecificModeGenerator();
+  specificMode.init();
+  
+  const suggestions = new SmartPracticeSuggestions();
+  suggestions.init();
+  
+  const exporter = new GoogleSheetsExporter();
+  exporter.init();
+  
+  // Modal event listeners
+  document.getElementById('btn-voice-mode')?.addEventListener('click', () => {
+    document.getElementById('voice-mode-modal').classList.add('on');
+  });
+  
+  document.getElementById('btn-parking-mode')?.addEventListener('click', () => {
+    document.getElementById('parking-mode-modal').classList.add('on');
+  });
+  
+  document.getElementById('btn-route-mode')?.addEventListener('click', () => {
+    document.getElementById('route-mode-modal').classList.add('on');
+  });
+  
+  document.getElementById('btn-specific-mode')?.addEventListener('click', () => {
+    document.getElementById('specific-mode-modal').classList.add('on');
+  });
+  
+  // Close buttons
+  ['voice-close', 'parking-close', 'route-close', 'specific-close'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', (e) => {
+      e.target.closest('.modal').classList.remove('on');
+    });
+  });
+});
+
+// Export for module usage
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    VoiceNavigationMode,
+    ParkingPracticeMode,
+    RouteModeGenerator,
+    SpecificModeGenerator,
+    SmartPracticeSuggestions,
+    GoogleSheetsExporter,
+    ComplexityAnalyzer
+  };
+}
+
 
 function bearing(lat1, lon1, lat2, lon2) {
   var dL = (lon2 - lon1) * Math.PI / 180;
@@ -1226,50 +2055,63 @@ function doSU() {
 var S_isGuest = true;
 
 window._elBootReady = function() {
-  enterApp();
   S.logs = loadLogsLocal();
   S.routes = loadRoutesLocal();
-  dLog();
-  dRt();
-  dProf();
 
-  tryRestoreSession(function(ok) {
-    if (ok) {
-      S_isGuest = false;
-      mergeLocalIntoUserScope();
-      Promise.all([
-        sbg("profiles", "id=eq." + S.uid + "&select=*"),
-        sbg("log_entries", "user_id=eq." + S.uid + "&select=*&order=created_at.desc&limit=200"),
-        sbg("saved_routes", "user_id=eq." + S.uid + "&select=*&order=created_at.desc&limit=100")
-      ]).then(function(r) {
-        if (r[0] && r[0].length) {
-          var savedPfp = S.profile.pfp || "";
-          S.profile = r[0][0];
-          try { var lsPfp = localStorage.getItem("ll-pfp"); if (lsPfp) savedPfp = lsPfp; } catch(x) {}
-          if (savedPfp) S.profile.pfp = savedPfp;
-        }
-        mergeServerLogs(r[1] || []);
-        mergeServerRoutes(r[2] || []);
-        saveLogsLocal();
-        saveRoutesLocal();
-        dLog();
-        dRt();
-        dProf();
-        applyLicTheme();
-        // Signed in — hide gates
-        showLogGate(false);
-        showRtGate(false);
-        toast("Signed in as " + (S.profile.name || "Driver"), {tone: "ok", icon: "check"});
-      }).catch(function() {
-        dProf();
-      });
-    } else {
-      // Guest — gates will be applied by enterApp's 300ms timeout
-      setTimeout(function() {
-        toast("Not signed in \u2014 your entries are saved on this device", {tone: "warn", long: true});
-      }, 2000);
-    }
-  });
+  // Check for a stored session before deciding whether to show auth or app
+  var hasSavedSession = !!(localStorage.getItem("el_rt") && localStorage.getItem("el_uid"));
+
+  if (hasSavedSession) {
+    // User was previously logged in — go straight to the app, restore session in background
+    enterApp();
+    dLog();
+    dRt();
+    dProf();
+
+    tryRestoreSession(function(ok) {
+      if (ok) {
+        S_isGuest = false;
+        mergeLocalIntoUserScope();
+        Promise.all([
+          sbg("profiles", "id=eq." + S.uid + "&select=*"),
+          sbg("log_entries", "user_id=eq." + S.uid + "&select=*&order=created_at.desc&limit=200"),
+          sbg("saved_routes", "user_id=eq." + S.uid + "&select=*&order=created_at.desc&limit=100")
+        ]).then(function(r) {
+          if (r[0] && r[0].length) {
+            var savedPfp = S.profile.pfp || "";
+            S.profile = r[0][0];
+            try { var lsPfp = localStorage.getItem("ll-pfp"); if (lsPfp) savedPfp = lsPfp; } catch(x) {}
+            if (savedPfp) S.profile.pfp = savedPfp;
+          }
+          mergeServerLogs(r[1] || []);
+          mergeServerRoutes(r[2] || []);
+          saveLogsLocal();
+          saveRoutesLocal();
+          dLog();
+          dRt();
+          dProf();
+          applyLicTheme();
+          showLogGate(false);
+          showRtGate(false);
+          // Silent re-auth — no toast needed, user already sees the app
+        }).catch(function() {
+          dProf();
+        });
+      } else {
+        // Refresh token expired — drop back to auth screen
+        S_isGuest = true;
+        $("app").classList.remove("on");
+        $("auth").classList.remove("gone");
+        toast("Session expired \u2014 please sign in again", {tone: "warn"});
+      }
+    });
+  } else {
+    // First-time visitor or signed out — show auth screen
+    dLog();
+    dRt();
+    dProf();
+    // auth screen is already visible by default, nothing to do
+  }
 };
 
 function mergeLocalIntoUserScope() {
@@ -2641,19 +3483,260 @@ var prevX = document.getElementById('prev-x');
 if (prevX) prevX.addEventListener('click', stopPreview);
 
 // ── In-App Navigation (Mapbox) ────────────────────────────────
+// ── In-App Navigation ─────────────────────────────────────────
 var navWatchId2 = null;
 var navStepIdx2 = 0;
 var navDrivenKm2 = 0;
+var navOffRoute2 = false, navOffRouteTimer2 = null;
+var navHeadingHistory2 = [];
+var navProgIdx2 = 0;
+var navCoords2 = [];
 
-var TURN_ICONS2 = {
-  'turn right': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 6H9a4 4 0 0 0-4 4v11"/><path d="M15 12l6-6-6-6"/></svg>',
-  'turn left': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h12a4 4 0 0 1 4 4v11"/><path d="M9 12L3 6l6-6"/></svg>',
-  'turn sharp right': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 18V9a6 6 0 0 1 6-6h4m0 0-3-3m3 3-3 3"/></svg>',
-  'turn sharp left': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 18V9a6 6 0 0 0-6-6H9m0 0 3-3M9 3l3 3"/></svg>',
-  'roundabout': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
-  'straight': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
-  'arrive': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>'
-};
+var turnArrowMarkers2 = [];
+function clearTurnArrows() { turnArrowMarkers2.forEach(function(m) { m.remove(); }); turnArrowMarkers2 = []; }
+
+function showTurnArrows(steps) {
+  clearTurnArrows();
+  if (!steps) return;
+  var rendered = {};
+  steps.forEach(function(step, i) {
+    if (i === 0 || i === steps.length - 1) return;
+    var loc = step.maneuver && step.maneuver.location; if (!loc) return;
+    var key = Math.round(loc[1]*4000)+'_'+Math.round(loc[0]*4000);
+    if (rendered[key]) return; rendered[key] = true;
+    var type = step.maneuver.type || '', mod = step.maneuver.modifier || '';
+    var svg;
+    if (mod.includes('right') && mod.includes('sharp')) svg='<polygon points="17,3 17,11 9,11 9,15 4,9 9,3" fill="white"/>';
+    else if (mod.includes('left') && mod.includes('sharp')) svg='<polygon points="7,3 7,11 15,11 15,15 20,9 15,3" fill="white"/>';
+    else if (mod.includes('right')) svg='<path d="M5 19L5 10Q5 5 10 5L14 5L14 2L19 7L14 12L14 9L10 9Q8 9 8 11L8 19Z" fill="white"/>';
+    else if (mod.includes('left')) svg='<path d="M19 19L19 10Q19 5 14 5L10 5L10 2L5 7L10 12L10 9L14 9Q16 9 16 11L16 19Z" fill="white"/>';
+    else if (type==='roundabout'||type==='rotary') svg='<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="white" stroke-width="2.5" fill="none"/><path d="M3 3v5h5" stroke="white" stroke-width="2.5" fill="none"/>';
+    else svg='<polygon points="12,2 17,10 14,10 14,22 10,22 10,10 7,10" fill="white" opacity="0.75"/>';
+    var el = document.createElement('div');
+    el.style.cssText='display:flex;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));';
+    el.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'+svg+'</svg>';
+    var mk = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat(loc).addTo(map);
+    turnArrowMarkers2.push(mk);
+  });
+}
+
+function showNS() {
+  var steps = S.curRoute ? S.curRoute.steps : [];
+  if (navStepIdx2 >= steps.length) {
+    $("ndist").innerHTML = icn("flag", "lg") + ' <span style="margin-left:6px">Arrived!</span>';
+    $("ndist").style.display = "inline-flex";
+    $("ndist").style.alignItems = "center";
+    $("nroad").textContent = "Destination reached";
+    $("nnext").textContent = "";
+    return;
+  }
+  var s = steps[navStepIdx2];
+  $("nroad").textContent = s.name || "Continue";
+  var man = s.maneuver ? s.maneuver.modifier || "" : "";
+  var typ = s.maneuver ? s.maneuver.type || "" : "";
+  var ic = "arrow_up";
+  if (typ === "arrive") ic = "flag";
+  else if (typ === "roundabout" || typ === "rotary") ic = "refresh_cw";
+  else if (man.indexOf("sharp right") >= 0) ic = "corner_up_right";
+  else if (man.indexOf("sharp left") >= 0) ic = "corner_up_left";
+  else if (man.indexOf("right") >= 0) ic = "turn_right";
+  else if (man.indexOf("left") >= 0) ic = "turn_left";
+  else if (man.indexOf("uturn") >= 0) ic = "refresh_cw";
+  $("nd").innerHTML = ICN[ic] || ICN.arrow_up;
+
+  if (navStepIdx2 + 1 < steps.length) {
+    var ns = steps[navStepIdx2 + 1];
+    var nm = ns.maneuver ? ns.maneuver.modifier || "" : "";
+    var ntyp = ns.maneuver ? ns.maneuver.type || "" : "";
+    var nic = "arrow_up";
+    if (ntyp === "roundabout") nic = "refresh_cw";
+    else if (nm.indexOf("right") >= 0) nic = "turn_right";
+    else if (nm.indexOf("left") >= 0) nic = "turn_left";
+    $("nnext").innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px">Then ' + icn(nic, "sm") + ' ' + (ns.name || "continue") + '</span>';
+  } else {
+    $("nnext").textContent = "";
+  }
+}
+
+function startNav() {
+  if (!S.curRoute) { toast('Generate a route first', { tone: 'warn' }); return; }
+  var steps = S.curRoute.steps;
+  if (!steps || !steps.length) { toast('No navigation steps available', { tone: 'warn' }); return; }
+  navStepIdx2 = 0; navDrivenKm2 = 0; navProgIdx2 = 0;
+  navOffRoute2 = false; navHeadingHistory2 = [];
+  navCoords2 = S.curRoute._coords || (S.curRoute.geometry ? S.curRoute.geometry.coordinates.map(function(c){return [c[1],c[0]];}) : []);
+  S.navStart = Date.now(); S.drivenKm = 0;
+  S.spdHistory = []; S.etaHistory = [];
+
+  $("navp").classList.add("on");
+  $("sorb").classList.add("on");
+  $("nbar").classList.add("on");
+  $("msh").classList.add("hid");
+  $("bnav").style.display = "none";
+  $("nav-prog-bar").style.width = "0%";
+
+  showTurnArrows(steps);
+  showNS();
+
+  var first = steps[0], second = steps[1], initBear = 0;
+  if (first && second && first.maneuver && second.maneuver) {
+    initBear = Math.atan2(second.maneuver.location[0]-first.maneuver.location[0], second.maneuver.location[1]-first.maneuver.location[1])*180/Math.PI;
+  }
+  map.easeTo({ pitch: 60, bearing: initBear, zoom: 17, speed: 0.8 });
+  toast('Drive started \u2014 stay safe!', { tone: 'ok', icon: 'play' });
+
+  if (navigator.geolocation) {
+    var prevLng2=null, prevLat2=null, prevTime2=null;
+    navWatchId2 = navigator.geolocation.watchPosition(function(pos) {
+      var lng2=pos.coords.longitude, lat2=pos.coords.latitude;
+      var acc = pos.coords.accuracy || 15;
+      var rawSpd = pos.coords.speed != null ? Math.round(pos.coords.speed * 3.6) : -1;
+
+      if (prevLng2 !== null) {
+        var dx=(lng2-prevLng2)*111320*Math.cos(lat2*Math.PI/180), dy=(lat2-prevLat2)*110574;
+        var segKm=Math.sqrt(dx*dx+dy*dy)/1000;
+        var dt = prevTime2 ? (Date.now()-prevTime2)/1000 : 1;
+        if (rawSpd < 0 && dt > 0) rawSpd = Math.round((segKm*1000/dt)*3.6);
+        if (segKm < 0.5) S.drivenKm += segKm;
+        var bear2=Math.atan2(lng2-prevLng2,lat2-prevLat2)*180/Math.PI;
+        userMarker && userMarker.setLngLat([lng2,lat2]);
+        map.easeTo({center:[lng2,lat2],bearing:bear2,pitch:60});
+      } else {
+        map.easeTo({center:[lng2,lat2],pitch:60});
+      }
+      prevLng2=lng2; prevLat2=lat2; prevTime2=Date.now();
+      userLng=lng2; userLat=lat2;
+      userMarker && userMarker.setLngLat([lng2,lat2]);
+
+      // Speed orb
+      S.spdHistory = S.spdHistory || [];
+      S.spdHistory.push(Math.max(0, rawSpd < 0 ? 0 : rawSpd));
+      if (S.spdHistory.length > 6) S.spdHistory.shift();
+      var avgSpd = Math.round(S.spdHistory.reduce(function(a,b){return a+b;},0)/S.spdHistory.length);
+      $("snum").textContent = avgSpd;
+      var sorb = $("sorb");
+      var accEl = $("sorb-acc");
+      if (accEl) accEl.textContent = acc < 10 ? "GPS \u00B1"+Math.round(acc)+"m" : (acc < 25 ? "\u00B1"+Math.round(acc)+"m" : "\u00B1"+Math.round(acc)+"m weak");
+      if (acc > 40) sorb.classList.add("gps-weak"); else sorb.classList.remove("gps-weak","gps-lost");
+      if (avgSpd > 110) sorb.style.borderColor="#f05050";
+      else if (avgSpd > 80) sorb.style.borderColor="#f0a040";
+      else if (avgSpd > 60) sorb.style.borderColor="var(--i)";
+      else sorb.style.borderColor="var(--acc)";
+
+      // ETA update
+      if (navCoords2.length > 1) {
+        var bD=Infinity, bI=navProgIdx2;
+        var sS=Math.max(0,navProgIdx2-5), sE=Math.min(navCoords2.length, navProgIdx2+80);
+        for (var i=sS;i<sE;i++) {
+          var dxi=(lng2-navCoords2[i][1])*111320*Math.cos(lat2*Math.PI/180), dyi=(lat2-navCoords2[i][0])*110574;
+          var di=Math.sqrt(dxi*dxi+dyi*dyi);
+          if (di<bD){bD=di;bI=i;}
+        }
+        if (bI>=navProgIdx2-3) navProgIdx2=bI;
+        $("nav-prog-bar").style.width = Math.min(100,Math.round((navProgIdx2/(navCoords2.length-1))*100))+"%";
+        var rK=0;
+        for (var j=navProgIdx2;j<navCoords2.length-1;j++) {
+          var dxj=(navCoords2[j+1][1]-navCoords2[j][1])*111320*Math.cos(navCoords2[j][0]*Math.PI/180);
+          var dyj=(navCoords2[j+1][0]-navCoords2[j][0])*110574;
+          rK+=Math.sqrt(dxj*dxj+dyj*dyj)/1000;
+        }
+        var etaSpd = avgSpd > 5 ? avgSpd : 35;
+        var rM = Math.round((rK/etaSpd)*60);
+        S.etaHistory = S.etaHistory || [];
+        S.etaHistory.push(rM);
+        if (S.etaHistory.length > 10) S.etaHistory.shift();
+        var wSum=0,wTotal=0;
+        S.etaHistory.forEach(function(v,i2){var w=i2+1;wSum+=v*w;wTotal+=w;});
+        var smoothEta=Math.round(wSum/wTotal);
+        $("neta").textContent = smoothEta;
+        $("nkm").textContent = rK.toFixed(1);
+        var etaTime=new Date(Date.now()+smoothEta*60000);
+        $("neta-clock").textContent = etaTime.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+      }
+
+      checkNavStep(lng2, lat2);
+    }, null, { enableHighAccuracy:true, maximumAge:500, timeout:8000 });
+  }
+}
+
+function checkNavStep(lng2, lat2) {
+  var steps = S.curRoute && S.curRoute.steps || [];
+  if (!steps.length || navStepIdx2 >= steps.length) return;
+  var st = steps[navStepIdx2];
+  var ml = st.maneuver && st.maneuver.location; if (!ml) return;
+  // ml is [lng, lat] in OSRM format
+  var dx=(lng2-ml[0])*111320*Math.cos(lat2*Math.PI/180), dy=(lat2-ml[1])*110574;
+  var distM = Math.sqrt(dx*dx+dy*dy);
+  var distTxt = distM < 1000 ? Math.round(distM)+"m" : (distM/1000).toFixed(1)+"km";
+  $("ndist").textContent = distTxt;
+  if (distM < 30 && !st._cued) {
+    st._cued = true;
+    navStepIdx2++;
+    if (navStepIdx2 >= steps.length) {
+      $("ndist").innerHTML = icn("flag","lg") + ' <span style="margin-left:6px">Arrived!</span>';
+      $("ndist").style.display = "inline-flex";
+      $("ndist").style.alignItems = "center";
+      $("nroad").textContent = "You reached your destination";
+      $("nnext").textContent = "";
+      $("nav-prog-bar").style.width = "100%";
+      toast('You have arrived!', {tone:'ok', icon:'flag', long:true});
+      if (navigator.vibrate) navigator.vibrate([200,100,200]);
+      setTimeout(stopNav, 3000);
+    } else {
+      showNS();
+    }
+  }
+}
+
+function stopNav() {
+  if (navOffRouteTimer2) { clearTimeout(navOffRouteTimer2); navOffRouteTimer2=null; }
+  if (navWatchId2!==null){navigator.geolocation.clearWatch(navWatchId2);navWatchId2=null;}
+  clearTurnArrows();
+  $("navp").classList.remove("on");
+  $("sorb").classList.remove("on");
+  $("nbar").classList.remove("on");
+  $("msh").classList.remove("hid");
+  $("bnav").style.display="";
+  map.easeTo({pitch:0,bearing:0,zoom:13,speed:0.8});
+  navStepIdx2=0; navProgIdx2=0;
+  S.spdHistory=[]; S.etaHistory=[];
+
+  var elapsed=S.navStart?Math.round((Date.now()-S.navStart)/60000):0;
+  var drivenDist = S.drivenKm ? S.drivenKm.toFixed(1) : "0";
+  S.navStart=null;
+
+  if(elapsed>=1){
+    var rd3=S.curRoute; S._pendingLogRoute=rd3||null;
+    editingLogIdx=-1;
+    $("ml-dt").value=new Date().toISOString().split("T")[0];
+    $("ml-du").value=elapsed;
+    $("ml-km").value=S.drivenKm>0?drivenDist:(rd3?rd3.distance.toFixed(1):"");
+    $("ml-sp").value=S.profile.supervisor||"";
+    $("ml-nt").value="Drove "+drivenDist+" km in "+elapsed+" min";
+    document.querySelectorAll("#ml-ch .ch").forEach(function(c){c.classList.remove("on");});
+    $("ml").querySelector("h3").innerHTML=icn("edit")+" Log Drive";
+    if(typeof updateLogSaveState==="function")updateLogSaveState();
+    $("ml").classList.add("on");
+    toast("Drive complete! "+drivenDist+" km driven.",{tone:"ok",icon:"check",long:true});
+  }
+}
+
+// Wire nav buttons
+$("nx") && $("nx").addEventListener("click", stopNav);
+$("nstop") && $("nstop").addEventListener("click", stopNav);
+$("nlog") && $("nlog").addEventListener("click", function() {
+  var elapsed=S.navStart?Math.round((Date.now()-S.navStart)/60000):0;
+  S._pendingLogRoute=S.curRoute||null; editingLogIdx=-1;
+  $("ml-dt").value=new Date().toISOString().split("T")[0];
+  $("ml-du").value=elapsed>0?elapsed:"";
+  $("ml-km").value=S.drivenKm>0?S.drivenKm.toFixed(1):(S.curRoute?S.curRoute.distance.toFixed(1):"");
+  $("ml-sp").value=S.profile.supervisor||"";
+  $("ml-nt").value="In-progress: "+S.drivenKm.toFixed(1)+" km driven";
+  document.querySelectorAll("#ml-ch .ch").forEach(function(c){c.classList.remove("on");});
+  $("ml").querySelector("h3").innerHTML=icn("edit")+" Log Drive";
+  if(typeof updateLogSaveState==="function")updateLogSaveState();
+  $("ml").classList.add("on");
+});
 
 var turnArrowMarkers2 = [];
 function clearTurnArrows() { turnArrowMarkers2.forEach(function(m) { m.remove(); }); turnArrowMarkers2 = []; }
@@ -3947,5 +5030,6 @@ setTimeout(function() {
 })();
 
   </script>
+  <script src="app-features.js"></script>
 </body>
 </html>

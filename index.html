@@ -2561,8 +2561,9 @@ function routeToSearched() {
   dismissSearchCard();
   var dest = _searchedDest.center;
   var coords = [[userLng, userLat], dest].map(function(c) { return c.join(','); }).join(';');
-  var url = 'https://api.mapbox.com/directions/v5/mapbox/driving/' + coords + '?steps=true&geometries=geojson&overview=full&access_token=' + mapboxgl.accessToken;
-  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+  var avoidKeys = Object.keys(W.avoid).filter(function(k) { return W.avoid[k]; });
+  var excludeParam = avoidKeys.length ? '&exclude=' + avoidKeys.join(',') : '';
+  var url = 'https://api.mapbox.com/directions/v5/mapbox/driving/' + coords + '?steps=true&geometries=geojson&overview=full' + excludeParam + '&access_token=' + mapboxgl.accessToken;  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
     if (!data.routes || !data.routes.length) { toast('No route found', { tone: 'warn' }); return; }
     var route = data.routes[0];
     var km = (route.distance / 1000).toFixed(1);
@@ -2727,7 +2728,7 @@ var RD = [
   {k: "hills",        i: "mountain",      n: "Hills",        d: "Steep grades",             required: false}
 ];
 
-var W = {step: 0, prefs: {}, rad: 5, dur: 60, dest: "loop"};
+var W = {step: 0, prefs: {}, rad: 5, dur: 60, dest: "loop", avoid: {}};
 
 function openW() {
   if (S.userLL) S.startLL = {lat: S.userLL.lat, lng: S.userLL.lng};
@@ -2750,7 +2751,7 @@ function openW() {
 function closeW() { $("wov").classList.remove("on"); }
 
 function dW() {
-  var p = $("wp"), t = 4, s = W.step;
+  var p = $("wp"), t = 5, s = W.step;
   var h = '<div class="wprog">';
   for (var i = 0; i < t; i++) {
     h += '<div class="d ' + (i < s ? "dn" : (i === s ? "cu" : "")) + '"></div>';
@@ -2758,10 +2759,36 @@ function dW() {
   h += '</div>';
 
   if (s === 0) {
-    h += '<div class="wlab">Step 1 of 4</div>';
+    h += '<div class="wlab">Step 1 of 5</div>';
     h += '<div class="wtit">Road Types</div>';
     h += '<div class="wdsc">Pick at least one core road type, add optional extras.</div>';
+    // Add this after the wdsc div and before the wgrp-label div
+    h += '<div style="margin-bottom:18px">';
+    h += '<label class="fl">Route Mode</label>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">';
 
+    // Loop Mode (active)
+    h += '<div class="wo sel" id="wmode-loop" style="flex-direction:column;align-items:center;text-align:center;padding:12px 8px;cursor:pointer" data-mode="loop">';
+    h += '<div class="oi">' + icn("refresh_cw", "lg") + '</div>';
+    h += '<div class="otn" style="font-size:11px;margin-top:4px">Loop</div>';
+    h += '</div>';
+
+    // Point to Point (coming soon)
+    h += '<div class="wo" style="flex-direction:column;align-items:center;text-align:center;padding:12px 8px;cursor:default;opacity:0.5;position:relative" data-mode="p2p">';
+    h += '<div class="oi">' + icn("navigation", "lg") + '</div>';
+    h += '<div class="otn" style="font-size:11px;margin-top:4px">Point to Point</div>';
+    h += '<span class="pill" style="position:absolute;top:4px;right:4px;font-size:8px;padding:2px 5px;background:var(--wg);color:var(--w)">SOON</span>';
+    h += '</div>';
+
+    // Parking Mode (coming soon)
+    h += '<div class="wo" style="flex-direction:column;align-items:center;text-align:center;padding:12px 8px;cursor:default;opacity:0.5;position:relative" data-mode="parking">';
+    h += '<div class="oi">' + icn("square_parking", "lg") + '</div>';
+    h += '<div class="otn" style="font-size:11px;margin-top:4px">Parking</div>';
+    h += '<span class="pill" style="position:absolute;top:4px;right:4px;font-size:8px;padding:2px 5px;background:var(--wg);color:var(--w)">SOON</span>';
+    h += '</div>';
+
+    h += '</div>';
+    h += '</div>';
     h += '<div class="wgrp-label"><span class="wgrp-dot wgrp-dot-req"></span>Core roads <span class="wgrp-req">required</span></div>';
     h += '<div class="wopts" id="wro-req">';
     RD.filter(function(r) { return r.required; }).forEach(function(r) {
@@ -2789,7 +2816,7 @@ function dW() {
 
   } else if (s === 1) {
     var sl = RD.filter(function(r) { return W.prefs[r.k] > 0; });
-    h += '<div class="wlab">Step 2 of 4</div>';
+    h += '<div class="wlab">Step 2 of 5</div>';
     h += '<div class="wtit">Intensity</div>';
     h += '<div class="wdsc">How much of each?</div>';
     if (!sl.length) {
@@ -2814,7 +2841,7 @@ function dW() {
   } else if (s === 2) {
     var sugLvl = suggestDifficulty(W.prefs, W.dur, W.rad);
     if (W.diff === 2 && sugLvl !== 2) W.diff = sugLvl;
-    h += '<div class="wlab">Step 3 of 4</div>';
+    h += '<div class="wlab">Step 3 of 5</div>';
     h += '<div class="wtit">Settings</div>';
     h += '<div class="wdsc">Configure your route parameters.</div>';
     h += '<div style="margin-bottom:20px">';
@@ -2842,7 +2869,35 @@ function dW() {
     h += '<button class="btn ba" style="flex:1" id="wnx">Next ' + icn("arrow_right", "sm") + '</button>';
     h += '</div>';
 
-  } else if (s === 3) {
+    } else if (s === 3) {
+    h += '<div class="wlab">Step 4 of 5</div>';
+    h += '<div class="wtit">Avoid</div>';
+    h += '<div class="wdsc">Exclude certain road types from your route.</div>';
+
+    var avoidOpts = [
+      { k: 'motorway',   label: 'Highways',      desc: 'Motorways & freeways' },
+      { k: 'toll',       label: 'Toll Roads',     desc: 'Avoid paying tolls' },
+      { k: 'unpaved',    label: 'Unpaved Roads',  desc: 'Sealed roads only' },
+      { k: 'sharp_turn', label: 'Sharp Turns',    desc: 'Easier for new drivers' },
+      { k: 'tunnel',     label: 'Tunnels',        desc: 'Avoid enclosed roads' }
+    ];
+
+    avoidOpts.forEach(function(opt) {
+      var isSelected = !!W.avoid[opt.k];
+      h += '<div class="avoid-opt' + (isSelected ? ' sel' : '') + '" data-avk="' + opt.k + '">';
+      h += '<div class="ot"><div class="otn">' + opt.label + '</div><div class="ots">' + opt.desc + '</div></div>';
+      h += '<div class="avoid-check"><div class="avoid-check-inner"></div></div>';
+      h += '</div>';
+    });
+
+    h += '<div class="wn">';
+    h += '<button class="btn bs" style="flex:1" id="wbk">' + icn("arrow_left", "sm") + ' Back</button>';
+    h += '<button class="btn ba" style="flex:1" id="wnx">Next ' + icn("arrow_right", "sm") + '</button>';
+    h += '</div>';
+
+
+
+  } else if (s === 4) {
     var sl2 = RD.filter(function(r) { return W.prefs[r.k] > 0; });
     var diff = getDiff(W.diff);
     h += '<div class="wlab">Step 4 of 4</div>';
@@ -2888,6 +2943,30 @@ function bW() {
   el = $("wx");
   if (el) el.addEventListener("click", closeW);
 
+  // Avoid toggle handlers
+  document.querySelectorAll('.avoid-opt').forEach(function(o) {
+    o.addEventListener('click', function() {
+      var k = o.getAttribute('data-k');
+      W.avoid[k] = !W.avoid[k];
+      o.classList.toggle('sel', !!W.avoid[k]);
+    });
+  });
+
+      // Add inside bW(), after the existing event bindings
+    var loopTile = document.getElementById("wmode-loop");
+    if (loopTile) {
+      loopTile.addEventListener("click", function() {
+        // already selected, no-op — future: switch modes
+      });
+    }
+
+    // Tapping "coming soon" tiles shows a toast
+    document.querySelectorAll('[data-mode="p2p"], [data-mode="parking"]').forEach(function(el) {
+      el.addEventListener("click", function() {
+        toast("Coming soon — stay tuned!", { tone: "info", icon: "sparkles" });
+      });
+    });
+
   el = $("wnx");
   if (el) el.addEventListener("click", function() {
     if (W.step === 0) {
@@ -2924,6 +3003,16 @@ function bW() {
       W.prefs[k] = Number(this.value);
       var l = $("iv-" + k);
       if (l) l.textContent = this.value + "/5";
+    });
+  });
+
+  // Step 4: Road preference sliders
+  document.querySelectorAll("[data-rpk]").forEach(function(s) {
+    s.addEventListener("input", function() {
+      var k = this.getAttribute("data-rpk");
+      W.prefs[k] = Number(this.value);
+      var l = $("wpv_" + k);
+      if (l) l.textContent = this.value + "%";
     });
   });
 
@@ -3100,6 +3189,10 @@ function doGen() {
   S.genRoutes = [];
   var collected = 0, total = 3, attempt = 0, maxAttempt = 28;
   var hasUserWps = (S.waypoints && S.waypoints.length > 0);
+  // Build exclude param from avoid selections
+  var avoidKeys = Object.keys(W.avoid).filter(function(k) { return W.avoid[k]; });
+  var excludeParam = avoidKeys.length ? '&exclude=' + avoidKeys.join(',') : '';
+  var baseAng = Math.random() * 2 * Math.PI;
 
   if (!hasUserWps) {
     var targetKm = (W.dur / 60) * 30;

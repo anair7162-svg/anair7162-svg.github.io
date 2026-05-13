@@ -33,8 +33,6 @@
 </head>
 <body>
 
-  <div id="nav-overlay" style="display:none"></div>
-
   <!-- ───── AUTH SCREEN ───── -->
   <div id="auth">
     <div class="al">eLearns.au</div>
@@ -126,23 +124,55 @@
   <div class="rd-panel" id="rd-panel-content"></div>
 </div>
 <!-- Navigation heads-up panel -->
-<div class="navp" id="navp">
-  <div class="nav-top">
-    <div class="nav-dir" id="nd"><span data-icon="arrow_up"></span></div>
-    <div class="nav-info">
-      <div class="nav-dist" id="ndist">--</div>
-      <div class="nav-road" id="nroad">--</div>
-      <div class="nav-next" id="nnext"></div>
+<div id="nav-overlay" style="position:absolute;inset:0;bottom:0;z-index:150;display:none;flex-direction:column;pointer-events:none;">
+  <div id="nav-top-bar" style="
+    position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);
+    left:50%;transform:translateX(-50%);
+    width:calc(100% - 24px);max-width:900px;
+    background:rgba(10,15,26,0.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:999px;
+    padding:10px 14px;display:flex;align-items:center;gap:12px;
+    pointer-events:all;box-shadow:0 8px 28px rgba(0,0,0,0.35);">
+    <div id="nav-instruction-icon" style="
+      width:48px;height:48px;background:var(--acc);border-radius:40px;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;color:var(--bg0);"></div>
+    <div style="flex:1;min-width:0;">
+      <div id="nav-instruction-main" style="font-size:0.95rem;font-weight:700;color:var(--t1);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Head off</div>
+      <div id="nav-instruction-dist" style="font-size:0.72rem;color:var(--t3);margin-top:2px;">—</div>
     </div>
-    <button class="bg" id="nx" style="color:#fff" aria-label="Exit navigation"><span data-icon="x" data-icon-size="lg"></span></button>
+    <button id="nav-end-btn" style="
+      background:#f87171;color:white;border:none;border-radius:999px;
+      padding:8px 16px;font-family:var(--f);font-size:0.8rem;font-weight:700;
+      cursor:pointer;flex-shrink:0;pointer-events:all;">End</button>
   </div>
-  <div class="nav-eta">
-    <div class="nav-eta-item"><span class="ic" data-icon="clock"></span><span class="nav-eta-val" id="neta">--</span> min</div>
-    <div class="nav-eta-item"><span class="ic" data-icon="route"></span><span class="nav-eta-val" id="nkm">--</span> km</div>
-    <div class="nav-eta-item"><span class="ic" data-icon="flag"></span><span class="nav-eta-val" id="neta-clock">--</span></div>
+  <div id="nav-bottom-bar" style="
+    position:absolute;bottom:calc(max(4px,env(safe-area-inset-bottom,0px)) + 24px);
+    left:50%;transform:translateX(-50%);
+    width:auto;min-width:280px;max-width:calc(100% - 32px);
+    background:rgba(10,15,26,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:999px;
+    padding:12px 18px;display:flex;align-items:center;gap:18px;
+    pointer-events:all;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <div style="flex:1;text-align:center;">
+      <div id="neta-clock" style="font-size:1.1rem;font-weight:800;color:var(--t1);">—</div>
+      <div style="font-size:0.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;">Arrival</div>
+    </div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.08);"></div>
+    <div style="flex:1;text-align:center;">
+      <div id="nkm" style="font-size:1.1rem;font-weight:800;color:var(--t1);">—</div>
+      <div style="font-size:0.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;">Remaining</div>
+    </div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.08);"></div>
+    <div style="flex:1;text-align:center;">
+      <div id="neta" style="font-size:1.1rem;font-weight:800;color:var(--t1);">—</div>
+      <div style="font-size:0.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;">Duration</div>
+    </div>
   </div>
-  <div class="nav-prog">
-    <div class="nav-prog-bar" id="nav-prog-bar" style="width:0%"></div>
+  <div style="position:absolute;bottom:calc(max(4px,env(safe-area-inset-bottom,0px)) + 16px);left:50%;transform:translateX(-50%);width:calc(100% - 48px);max-width:520px;">
+    <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+      <div id="nav-prog-bar" style="height:100%;width:0%;background:var(--acc);border-radius:2px;transition:width .4s ease;"></div>
+    </div>
   </div>
 </div>
       <div class="sorb" id="sorb"><div class="sn" id="snum">0</div><div class="su">km/h</div><div class="sorb-acc" id="sorb-acc"></div></div>
@@ -1796,7 +1826,7 @@ var S = {
 };
 
 // ── Mapbox map init ──────────────────────────────────────────
-mapboxgl.accessToken = 'pk.eyJ1Ijoic2VzaHl3ZXNoeXkiLCJhIjoiY21vdXZpMDE0MDBucTJxcTVlNmticGFzaCJ9.FkQ2CXdkypJh6c_DlqdXrA';
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2VzaHl3ZXNoeXkiLCJhIjoiY21vdXZlMDhiMDBsdDJycHU2ZDZreW5zcSJ9.8SzZZMgoQ9Uu_6prtcc0iQ';
 var DARK_STYLE = 'mapbox://styles/seshyweshyy/cmomw99hl003f01ss8wnn8xyw';
 var LIGHT_STYLE = 'mapbox://styles/mapbox/streets-v12';
 var isDark = true;
@@ -3480,90 +3510,142 @@ function addOneRoute() {
   </script>
   <script>
 // ── 3D Route Preview (full-screen Mapbox panel) ───────────────
-var previewMap2 = null;
+var previewStepIndex2 = 0;
 var previewAnimFrame2 = null;
-var previewMarker2 = null;
-var previewSpeed2 = 1.0;
+var previewInterval2 = null;
 
 function startPreview() {
   if (!S.curRoute || !S.curRoute.geometry) { toast('No route to preview', { tone: 'warn' }); return; }
-  var panel = document.getElementById('mbx-route-preview-panel');
-  if (!panel) return;
-  panel.classList.add('open');
-  if (!previewMap2) {
-    previewMap2 = new mapboxgl.Map({ container: 'mbx-preview-map', style: isDark ? DARK_STYLE : LIGHT_STYLE, center: [userLng, userLat], zoom: 13, pitch: 60, attributionControl: false });
-    previewMap2.once('load', function() {
-      previewMap2.addSource('mapbox-dem', { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 });
-      previewMap2.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-      startPreviewAnim();
-    });
-  } else { startPreviewAnim(); }
-  // Info card
-  var info = document.getElementById('mbx-preview-info-card');
-  if (info && S.curRoute) {
-    var rd = S.curRoute;
-    var diff = getDiff(W.diff || 2);
-    info.innerHTML = '<div style="font-size:11px;font-weight:800;color:var(--acc);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">3D Route Preview</div>' +
-      '<div style="font-size:24px;font-weight:900;color:var(--t1);letter-spacing:-.6px;margin-bottom:4px">' + (rd.distance||0).toFixed(1) + ' km</div>' +
-      '<div style="font-size:13px;color:var(--t2);margin-bottom:14px">' + Math.round(rd.duration||0) + ' min \u00B7 ' + diff.label + '</div>' +
-      '<div style="display:flex;gap:8px;margin-bottom:10px">' +
-        '<button class="btn bs bsm" id="prev2-spd" style="flex:1">Speed: 1\u00D7</button>' +
-        '<button class="btn bs bsm" id="prev2-stop" style="flex:1">\u25A0 Stop</button>' +
-      '</div>' +
-      '<div style="font-size:11px;color:var(--t3);line-height:1.5">3D flyover of your route. The camera follows the road.</div>';
-    document.getElementById('prev2-spd') && document.getElementById('prev2-spd').addEventListener('click', function() {
-      var spds = [0.5, 1, 2, 3]; var si = spds.indexOf(previewSpeed2);
-      previewSpeed2 = spds[(si+1)%spds.length]; this.textContent = 'Speed: ' + previewSpeed2 + '\u00D7';
-    });
-    document.getElementById('prev2-stop') && document.getElementById('prev2-stop').addEventListener('click', stopPreview);
-  }
+  var steps = S.curRoute.steps;
+  if (!steps || !steps.length) { toast('No steps to preview', { tone: 'warn' }); return; }
+
+  stopPreview();
+
+  var navOv = document.getElementById('nav-overlay');
+  if (navOv) navOv.style.display = 'flex';
+  $("msh").classList.add("hid");
+  $("bnav").style.display = "none";
+  $("sorb").classList.add("on");
+
+  var endBtn = document.getElementById('nav-end-btn');
+  if (endBtn) { endBtn.textContent = 'Exit Preview'; endBtn.onclick = stopPreview; }
+
+  var etaEl = document.getElementById('neta-clock'); if (etaEl) etaEl.textContent = '\u2014';
+  var rdEl = document.getElementById('nkm'); if (rdEl) rdEl.textContent = (S.curRoute.distance||0).toFixed(1)+' km';
+  var rtEl = document.getElementById('neta'); if (rtEl) rtEl.textContent = Math.round(S.curRoute.duration||0)+'m';
+
+  previewStepIndex2 = 0;
+  showTurnArrows(steps);
+  previewFlyToStep2();
 }
 
-function startPreviewAnim() {
-  if (!S.curRoute || !S.curRoute.geometry) return;
-  var coords = S.curRoute.geometry.coordinates;
-  if (!coords || coords.length < 2) return;
-  if (previewMap2.getLayer('pr-line')) previewMap2.removeLayer('pr-line');
-  if (previewMap2.getLayer('pr-casing')) previewMap2.removeLayer('pr-casing');
-  if (previewMap2.getSource('pr-route')) previewMap2.removeSource('pr-route');
-  previewMap2.addSource('pr-route', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: S.curRoute.geometry } });
-  previewMap2.addLayer({ id: 'pr-casing', type: 'line', source: 'pr-route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#0a1322', 'line-width': 10, 'line-opacity': 0.8 } });
-  previewMap2.addLayer({ id: 'pr-line', type: 'line', source: 'pr-route', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#4d9eff', 'line-width': 5, 'line-opacity': 0.95 } });
-  if (previewMarker2) previewMarker2.remove();
-  var pEl = document.createElement('div');
-  pEl.style.cssText = 'width:20px;height:20px;border-radius:50%;background:var(--acc);border:3px solid white;box-shadow:0 0 12px rgba(34,216,158,.6);';
-  previewMarker2 = new mapboxgl.Marker({ element: pEl, anchor: 'center' }).setLngLat(coords[0]).addTo(previewMap2);
-  var totalLen = 0, cumDist = [0];
+function polylineLength2(coords) {
+  var len = 0;
   for (var i = 1; i < coords.length; i++) {
-    var dx=(coords[i][0]-coords[i-1][0])*111320*Math.cos(coords[i-1][1]*Math.PI/180);
-    var dy=(coords[i][1]-coords[i-1][1])*110574;
-    totalLen += Math.sqrt(dx*dx+dy*dy); cumDist.push(totalLen);
+    var dx = coords[i][0]-coords[i-1][0], dy = coords[i][1]-coords[i-1][1];
+    len += Math.sqrt(dx*dx+dy*dy);
   }
-  var progress = 0, lastTime = null, mps = 14;
-  function anim(t) {
-    if (!lastTime) lastTime = t;
-    progress += ((t-lastTime)/1000) * mps * previewSpeed2; lastTime = t;
-    if (progress >= totalLen) progress = 0;
-    var lo=0,hi=cumDist.length-1;
-    while (lo<hi-1){var mid=Math.floor((lo+hi)/2);if(cumDist[mid]<=progress)lo=mid;else hi=mid;}
-    var segLen=cumDist[hi]-cumDist[lo], tt=segLen>0?(progress-cumDist[lo])/segLen:0;
-    var lng2=coords[lo][0]+(coords[hi][0]-coords[lo][0])*tt;
-    var lat2=coords[lo][1]+(coords[hi][1]-coords[lo][1])*tt;
-    previewMarker2.setLngLat([lng2, lat2]);
-    var ai=Math.min(hi+5,coords.length-1);
-    var bear=Math.atan2(coords[ai][0]-lng2,coords[ai][1]-lat2)*180/Math.PI;
-    previewMap2.easeTo({ center:[lng2,lat2], bearing:bear, pitch:60, zoom:17, duration:200, easing:function(x){return x;} });
-    var pan = document.getElementById('mbx-route-preview-panel');
-    if (pan && pan.classList.contains('open')) previewAnimFrame2 = requestAnimationFrame(anim);
+  return len;
+}
+
+function samplePolyline2(coords, t) {
+  if (coords.length === 1) return { pos: coords[0], bearing: 0 };
+  var totalLen = polylineLength2(coords);
+  var target = totalLen * Math.max(0, Math.min(1, t));
+  var walked = 0;
+  for (var i = 1; i < coords.length; i++) {
+    var dx = coords[i][0]-coords[i-1][0], dy = coords[i][1]-coords[i-1][1];
+    var segLen = Math.sqrt(dx*dx+dy*dy);
+    if (walked+segLen >= target || i === coords.length-1) {
+      var segT = segLen > 0 ? (target-walked)/segLen : 0;
+      return { pos: [coords[i-1][0]+dx*segT, coords[i-1][1]+dy*segT], bearing: Math.atan2(dx,dy)*180/Math.PI };
+    }
+    walked += segLen;
   }
-  previewAnimFrame2 = requestAnimationFrame(anim);
+  return { pos: coords[coords.length-1], bearing: 0 };
+}
+
+function previewFlyToStep2() {
+  var steps = S.curRoute && S.curRoute.steps || [];
+  if (previewStepIndex2 >= steps.length) { stopPreview(); return; }
+  var step = steps[previewStepIndex2];
+  if (!step || !step.maneuver) { stopPreview(); return; }
+
+  var stepCoords = (step.geometry && step.geometry.coordinates && step.geometry.coordinates.length > 1)
+    ? step.geometry.coordinates
+    : [ previewStepIndex2 > 0 ? steps[previewStepIndex2-1].maneuver.location : [userLng, userLat], step.maneuver.location ];
+
+  var type = step.maneuver.type||'', mod = step.maneuver.modifier||'';
+  var key = (mod+(mod&&type?' ':'')+type).trim()||'straight';
+  var icon = TURN_ICONS2[key]||TURN_ICONS2[type]||TURN_ICONS2['straight'];
+  var navIcon = document.getElementById('nav-instruction-icon');
+  var navMain = document.getElementById('nav-instruction-main');
+  var navDist = document.getElementById('nav-instruction-dist');
+  if (navIcon) navIcon.innerHTML = icon;
+  if (navMain) navMain.textContent = step.maneuver.instruction||type;
+  var distM = step.distance||0;
+  if (navDist) navDist.textContent = 'Preview \u00B7 '+(distM>=1000?(distM/1000).toFixed(1)+' km':Math.round(distM)+' m');
+
+  var animDuration = Math.min(Math.max(step.distance*60, 800), 2500);
+  if (previewAnimFrame2) cancelAnimationFrame(previewAnimFrame2);
+  var startTime = performance.now();
+
+  function animateMarker(now) {
+    var elapsed = now - startTime;
+    var t = Math.min(elapsed/animDuration, 1);
+    var easedT = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    var sample = samplePolyline2(stepCoords, easedT);
+    userMarker && userMarker.setLngLat(sample.pos);
+    map.easeTo({ center: sample.pos, bearing: sample.bearing, pitch: 60, zoom: 17, duration: 150, easing: function(x){return x;} });
+    if (t < 1) {
+      previewAnimFrame2 = requestAnimationFrame(animateMarker);
+    } else {
+      var completedStep = steps[previewStepIndex2];
+      if (completedStep && completedStep.maneuver) {
+        var loc2 = completedStep.maneuver.location;
+        var pKey = Math.round(loc2[1]*4000)+'_'+Math.round(loc2[0]*4000);
+        if (turnArrowPassMap[pKey]) {
+          var entry = turnArrowPassMap[pKey];
+          entry.passIndex++;
+          if (entry.passIndex < entry.group.length) {
+            var ns = entry.group[entry.passIndex].step;
+            var nt = ns.maneuver.type||'', nm = ns.maneuver.modifier||'';
+            var svgInner;
+            if (nt==='roundabout'||nt==='rotary') svgInner='<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M3 3v5h5" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+            else if (nm.includes('right')&&nm.includes('sharp')) svgInner='<polygon points="17,3 17,11 9,11 9,15 4,9 9,3" fill="white"/>';
+            else if (nm.includes('left')&&nm.includes('sharp')) svgInner='<polygon points="7,3 7,11 15,11 15,15 20,9 15,3" fill="white"/>';
+            else if (nm.includes('right')) svgInner='<path d="M5 19 L5 10 Q5 5 10 5 L14 5 L14 2 L19 7 L14 12 L14 9 L10 9 Q8 9 8 11 L8 19 Z" fill="white"/>';
+            else if (nm.includes('left')) svgInner='<path d="M19 19 L19 10 Q19 5 14 5 L10 5 L10 2 L5 7 L10 12 L10 9 L14 9 Q16 9 16 11 L16 19 Z" fill="white"/>';
+            else svgInner='<polygon points="12,2 17,10 14,10 14,22 10,22 10,10 7,10" fill="white" opacity="0.75"/>';
+            entry.el.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none">'+svgInner+'</svg>';
+          }
+        }
+      }
+      previewInterval2 = setTimeout(function() { previewStepIndex2++; previewFlyToStep2(); }, 200);
+    }
+  }
+  previewAnimFrame2 = requestAnimationFrame(animateMarker);
 }
 
 function stopPreview() {
+  if (previewInterval2) { clearTimeout(previewInterval2); previewInterval2 = null; }
   if (previewAnimFrame2) { cancelAnimationFrame(previewAnimFrame2); previewAnimFrame2 = null; }
-  var panel = document.getElementById('mbx-route-preview-panel');
-  if (panel) panel.classList.remove('open');
-  if (previewMarker2) { previewMarker2.remove(); previewMarker2 = null; }
+  clearTurnArrows();
+  if (userMarker && S.userLL) userMarker.setLngLat([S.userLL.lng, S.userLL.lat]);
+  var navOv = document.getElementById('nav-overlay');
+  if (navOv) navOv.style.display = 'none';
+  $("msh").classList.remove("hid");
+  $("bnav").style.display = "";
+  $("sorb").classList.remove("on");
+  map.easeTo({ pitch: 0, bearing: 0, zoom: 13, speed: 0.8 });
+  var endBtn = document.getElementById('nav-end-btn');
+  if (endBtn) { endBtn.textContent = 'End'; endBtn.onclick = stopNav; }
+  if (S.curRoute && S.curRoute.geometry) {
+    var coords = S.curRoute.geometry.coordinates;
+    var bounds = coords.reduce(function(b,c){return b.extend(c);}, new mapboxgl.LngLatBounds(coords[0],coords[0]));
+    var isMobile = window.innerWidth < 500;
+    map.fitBounds(bounds, { padding: isMobile ? {top:80,bottom:220,left:20,right:20} : {top:80,bottom:200,left:40,right:360} });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3571,7 +3653,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (pb) pb.addEventListener('click', stopPreview);
 });
 
-// prev-x (if old preview bar still exists)
 var prevX = document.getElementById('prev-x');
 if (prevX) prevX.addEventListener('click', stopPreview);
 
@@ -3588,28 +3669,67 @@ var navCoords2 = [];
 var turnArrowMarkers2 = [];
 function clearTurnArrows() { turnArrowMarkers2.forEach(function(m) { m.remove(); }); turnArrowMarkers2 = []; }
 
+var turnArrowPassMap = {};
+
 function showTurnArrows(steps) {
   clearTurnArrows();
-  if (!steps) return;
+  if (!steps || !steps.length) return;
+
+  // Group steps by location key to detect multi-pass intersections
+  var locationGroups = {};
+  steps.forEach(function(step, i) {
+    if (i === 0 || i === steps.length - 1) return;
+    var loc = step.maneuver && step.maneuver.location;
+    if (!loc) return;
+    var key = Math.round(loc[1] * 4000) + '_' + Math.round(loc[0] * 4000);
+    if (!locationGroups[key]) locationGroups[key] = [];
+    locationGroups[key].push({ step: step, i: i });
+  });
+
+  // Reset pass map
+  Object.keys(turnArrowPassMap).forEach(function(k) { delete turnArrowPassMap[k]; });
+
   var rendered = {};
   steps.forEach(function(step, i) {
     if (i === 0 || i === steps.length - 1) return;
-    var loc = step.maneuver && step.maneuver.location; if (!loc) return;
-    var key = Math.round(loc[1]*4000)+'_'+Math.round(loc[0]*4000);
-    if (rendered[key]) return; rendered[key] = true;
-    var type = step.maneuver.type || '', mod = step.maneuver.modifier || '';
-    var svg;
-    if (mod.includes('right') && mod.includes('sharp')) svg='<polygon points="17,3 17,11 9,11 9,15 4,9 9,3" fill="white"/>';
-    else if (mod.includes('left') && mod.includes('sharp')) svg='<polygon points="7,3 7,11 15,11 15,15 20,9 15,3" fill="white"/>';
-    else if (mod.includes('right')) svg='<path d="M5 19L5 10Q5 5 10 5L14 5L14 2L19 7L14 12L14 9L10 9Q8 9 8 11L8 19Z" fill="white"/>';
-    else if (mod.includes('left')) svg='<path d="M19 19L19 10Q19 5 14 5L10 5L10 2L5 7L10 12L10 9L14 9Q16 9 16 11L16 19Z" fill="white"/>';
-    else if (type==='roundabout'||type==='rotary') svg='<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="white" stroke-width="2.5" fill="none"/><path d="M3 3v5h5" stroke="white" stroke-width="2.5" fill="none"/>';
-    else svg='<polygon points="12,2 17,10 14,10 14,22 10,22 10,10 7,10" fill="white" opacity="0.75"/>';
+    var loc = step.maneuver && step.maneuver.location;
+    if (!loc) return;
+    var locationKey = Math.round(loc[1] * 4000) + '_' + Math.round(loc[0] * 4000);
+    if (rendered[locationKey]) return;
+    rendered[locationKey] = true;
+
+    var type = step.maneuver.type || '';
+    var mod  = step.maneuver.modifier || '';
+
+    var arrowSvg;
+    if (type === 'roundabout' || type === 'rotary') {
+      arrowSvg = '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M3 3v5h5" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    } else if (mod.includes('right') && mod.includes('sharp')) {
+      arrowSvg = '<polygon points="17,3 17,11 9,11 9,15 4,9 9,3" fill="white"/>';
+    } else if (mod.includes('left') && mod.includes('sharp')) {
+      arrowSvg = '<polygon points="7,3 7,11 15,11 15,15 20,9 15,3" fill="white"/>';
+    } else if (mod.includes('right')) {
+      arrowSvg = '<path d="M5 19 L5 10 Q5 5 10 5 L14 5 L14 2 L19 7 L14 12 L14 9 L10 9 Q8 9 8 11 L8 19 Z" fill="white"/>';
+    } else if (mod.includes('left')) {
+      arrowSvg = '<path d="M19 19 L19 10 Q19 5 14 5 L10 5 L10 2 L5 7 L10 12 L10 9 L14 9 Q16 9 16 11 L16 19 Z" fill="white"/>';
+    } else if (type === 'merge' || type === 'fork') {
+      arrowSvg = '<polygon points="12,2 17,10 14,10 14,22 10,22 10,10 7,10" fill="white"/>';
+    } else {
+      arrowSvg = '<polygon points="12,2 17,10 14,10 14,22 10,22 10,10 7,10" fill="white" opacity="0.75"/>';
+    }
+
     var el = document.createElement('div');
-    el.style.cssText='display:flex;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));';
-    el.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'+svg+'</svg>';
+    el.style.cssText = 'display:flex;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));';
+    el.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' + arrowSvg + '</svg>';
+
     var mk = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat(loc).addTo(map);
     turnArrowMarkers2.push(mk);
+
+    // Register multi-pass groups
+    var group = locationGroups[locationKey];
+    if (group && group.length > 1) {
+      turnArrowPassMap[locationKey] = { group: group, passIndex: 0, marker: mk, el: el };
+    }
   });
 }
 
@@ -3651,235 +3771,38 @@ function showNS() {
   }
 }
 
-function startNav() {
-  if (!S.curRoute) { toast('Generate a route first', { tone: 'warn' }); return; }
-  var steps = S.curRoute.steps;
-  if (!steps || !steps.length) { toast('No navigation steps available', { tone: 'warn' }); return; }
-  navStepIdx2 = 0; navDrivenKm2 = 0; navProgIdx2 = 0;
-  navOffRoute2 = false; navHeadingHistory2 = [];
-  navCoords2 = S.curRoute._coords || (S.curRoute.geometry ? S.curRoute.geometry.coordinates.map(function(c){return [c[1],c[0]];}) : []);
-  S.navStart = Date.now(); S.drivenKm = 0;
-  S.spdHistory = []; S.etaHistory = [];
-
-  $("navp").classList.add("on");
-  $("sorb").classList.add("on");
-  $("nbar").classList.add("on");
-  $("msh").classList.add("hid");
-  $("bnav").style.display = "none";
-  $("nav-prog-bar").style.width = "0%";
-
-  showTurnArrows(steps);
-  showNS();
-
-  var first = steps[0], second = steps[1], initBear = 0;
-  if (first && second && first.maneuver && second.maneuver) {
-    initBear = Math.atan2(second.maneuver.location[0]-first.maneuver.location[0], second.maneuver.location[1]-first.maneuver.location[1])*180/Math.PI;
-  }
-  map.easeTo({ pitch: 60, bearing: initBear, zoom: 17, speed: 0.8 });
-  toast('Drive started \u2014 stay safe!', { tone: 'ok', icon: 'play' });
-
-  if (navigator.geolocation) {
-    var prevLng2=null, prevLat2=null, prevTime2=null;
-    navWatchId2 = navigator.geolocation.watchPosition(function(pos) {
-      var lng2=pos.coords.longitude, lat2=pos.coords.latitude;
-      var acc = pos.coords.accuracy || 15;
-      var rawSpd = pos.coords.speed != null ? Math.round(pos.coords.speed * 3.6) : -1;
-
-      if (prevLng2 !== null) {
-        var dx=(lng2-prevLng2)*111320*Math.cos(lat2*Math.PI/180), dy=(lat2-prevLat2)*110574;
-        var segKm=Math.sqrt(dx*dx+dy*dy)/1000;
-        var dt = prevTime2 ? (Date.now()-prevTime2)/1000 : 1;
-        if (rawSpd < 0 && dt > 0) rawSpd = Math.round((segKm*1000/dt)*3.6);
-        if (segKm < 0.5) S.drivenKm += segKm;
-        var bear2=Math.atan2(lng2-prevLng2,lat2-prevLat2)*180/Math.PI;
-        userMarker && userMarker.setLngLat([lng2,lat2]);
-        map.easeTo({center:[lng2,lat2],bearing:bear2,pitch:60});
-      } else {
-        map.easeTo({center:[lng2,lat2],pitch:60});
-      }
-      prevLng2=lng2; prevLat2=lat2; prevTime2=Date.now();
-      userLng=lng2; userLat=lat2;
-      userMarker && userMarker.setLngLat([lng2,lat2]);
-
-      // Speed orb
-      S.spdHistory = S.spdHistory || [];
-      S.spdHistory.push(Math.max(0, rawSpd < 0 ? 0 : rawSpd));
-      if (S.spdHistory.length > 6) S.spdHistory.shift();
-      var avgSpd = Math.round(S.spdHistory.reduce(function(a,b){return a+b;},0)/S.spdHistory.length);
-      $("snum").textContent = avgSpd;
-      var sorb = $("sorb");
-      var accEl = $("sorb-acc");
-      if (accEl) accEl.textContent = acc < 10 ? "GPS \u00B1"+Math.round(acc)+"m" : (acc < 25 ? "\u00B1"+Math.round(acc)+"m" : "\u00B1"+Math.round(acc)+"m weak");
-      if (acc > 40) sorb.classList.add("gps-weak"); else sorb.classList.remove("gps-weak","gps-lost");
-      if (avgSpd > 110) sorb.style.borderColor="#f05050";
-      else if (avgSpd > 80) sorb.style.borderColor="#f0a040";
-      else if (avgSpd > 60) sorb.style.borderColor="var(--i)";
-      else sorb.style.borderColor="var(--acc)";
-
-      // ETA update
-      if (navCoords2.length > 1) {
-        var bD=Infinity, bI=navProgIdx2;
-        var sS=Math.max(0,navProgIdx2-5), sE=Math.min(navCoords2.length, navProgIdx2+80);
-        for (var i=sS;i<sE;i++) {
-          var dxi=(lng2-navCoords2[i][1])*111320*Math.cos(lat2*Math.PI/180), dyi=(lat2-navCoords2[i][0])*110574;
-          var di=Math.sqrt(dxi*dxi+dyi*dyi);
-          if (di<bD){bD=di;bI=i;}
-        }
-        if (bI>=navProgIdx2-3) navProgIdx2=bI;
-        $("nav-prog-bar").style.width = Math.min(100,Math.round((navProgIdx2/(navCoords2.length-1))*100))+"%";
-        var rK=0;
-        for (var j=navProgIdx2;j<navCoords2.length-1;j++) {
-          var dxj=(navCoords2[j+1][1]-navCoords2[j][1])*111320*Math.cos(navCoords2[j][0]*Math.PI/180);
-          var dyj=(navCoords2[j+1][0]-navCoords2[j][0])*110574;
-          rK+=Math.sqrt(dxj*dxj+dyj*dyj)/1000;
-        }
-        var etaSpd = avgSpd > 5 ? avgSpd : 35;
-        var rM = Math.round((rK/etaSpd)*60);
-        S.etaHistory = S.etaHistory || [];
-        S.etaHistory.push(rM);
-        if (S.etaHistory.length > 10) S.etaHistory.shift();
-        var wSum=0,wTotal=0;
-        S.etaHistory.forEach(function(v,i2){var w=i2+1;wSum+=v*w;wTotal+=w;});
-        var smoothEta=Math.round(wSum/wTotal);
-        $("neta").textContent = smoothEta;
-        $("nkm").textContent = rK.toFixed(1);
-        var etaTime=new Date(Date.now()+smoothEta*60000);
-        $("neta-clock").textContent = etaTime.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-      }
-
-      checkNavStep(lng2, lat2);
-    }, null, { enableHighAccuracy:true, maximumAge:500, timeout:8000 });
-  }
-}
-
-function checkNavStep(lng2, lat2) {
-  var steps = S.curRoute && S.curRoute.steps || [];
-  if (!steps.length || navStepIdx2 >= steps.length) return;
-  var st = steps[navStepIdx2];
-  var ml = st.maneuver && st.maneuver.location; if (!ml) return;
-  // ml is [lng, lat] in OSRM format
-  var dx=(lng2-ml[0])*111320*Math.cos(lat2*Math.PI/180), dy=(lat2-ml[1])*110574;
-  var distM = Math.sqrt(dx*dx+dy*dy);
-  var distTxt = distM < 1000 ? Math.round(distM)+"m" : (distM/1000).toFixed(1)+"km";
-  $("ndist").textContent = distTxt;
-  if (distM < 30 && !st._cued) {
-    st._cued = true;
-    navStepIdx2++;
-    if (navStepIdx2 >= steps.length) {
-      $("ndist").innerHTML = icn("flag","lg") + ' <span style="margin-left:6px">Arrived!</span>';
-      $("ndist").style.display = "inline-flex";
-      $("ndist").style.alignItems = "center";
-      $("nroad").textContent = "You reached your destination";
-      $("nnext").textContent = "";
-      $("nav-prog-bar").style.width = "100%";
-      toast('You have arrived!', {tone:'ok', icon:'flag', long:true});
-      if (navigator.vibrate) navigator.vibrate([200,100,200]);
-      setTimeout(stopNav, 3000);
-    } else {
-      showNS();
-    }
-  }
-}
-
-function stopNav() {
-  if (navOffRouteTimer2) { clearTimeout(navOffRouteTimer2); navOffRouteTimer2=null; }
-  if (navWatchId2!==null){navigator.geolocation.clearWatch(navWatchId2);navWatchId2=null;}
-  clearTurnArrows();
-  $("navp").classList.remove("on");
-  $("sorb").classList.remove("on");
-  $("nbar").classList.remove("on");
-  $("msh").classList.remove("hid");
-  $("bnav").style.display="";
-  map.easeTo({pitch:0,bearing:0,zoom:13,speed:0.8});
-  navStepIdx2=0; navProgIdx2=0;
-  S.spdHistory=[]; S.etaHistory=[];
-
-  var elapsed=S.navStart?Math.round((Date.now()-S.navStart)/60000):0;
-  var drivenDist = S.drivenKm ? S.drivenKm.toFixed(1) : "0";
-  S.navStart=null;
-
-  if(elapsed>=1){
-    var rd3=S.curRoute; S._pendingLogRoute=rd3||null;
-    editingLogIdx=-1;
-    $("ml-dt").value=new Date().toISOString().split("T")[0];
-    $("ml-du").value=elapsed;
-    $("ml-km").value=S.drivenKm>0?drivenDist:(rd3?rd3.distance.toFixed(1):"");
-    $("ml-sp").value=S.profile.supervisor||"";
-    $("ml-nt").value="Drove "+drivenDist+" km in "+elapsed+" min";
-    document.querySelectorAll("#ml-ch .ch").forEach(function(c){c.classList.remove("on");});
-    $("ml").querySelector("h3").innerHTML=icn("edit")+" Log Drive";
-    if(typeof updateLogSaveState==="function")updateLogSaveState();
-    $("ml").classList.add("on");
-    toast("Drive complete! "+drivenDist+" km driven.",{tone:"ok",icon:"check",long:true});
-  }
-}
-
-// Wire nav buttons
-$("nx") && $("nx").addEventListener("click", stopNav);
-$("nstop") && $("nstop").addEventListener("click", stopNav);
-$("nlog") && $("nlog").addEventListener("click", function() {
-  var elapsed=S.navStart?Math.round((Date.now()-S.navStart)/60000):0;
-  S._pendingLogRoute=S.curRoute||null; editingLogIdx=-1;
-  $("ml-dt").value=new Date().toISOString().split("T")[0];
-  $("ml-du").value=elapsed>0?elapsed:"";
-  $("ml-km").value=S.drivenKm>0?S.drivenKm.toFixed(1):(S.curRoute?S.curRoute.distance.toFixed(1):"");
-  $("ml-sp").value=S.profile.supervisor||"";
-  $("ml-nt").value="In-progress: "+S.drivenKm.toFixed(1)+" km driven";
-  document.querySelectorAll("#ml-ch .ch").forEach(function(c){c.classList.remove("on");});
-  $("ml").querySelector("h3").innerHTML=icn("edit")+" Log Drive";
-  if(typeof updateLogSaveState==="function")updateLogSaveState();
-  $("ml").classList.add("on");
-});
-
-var turnArrowMarkers2 = [];
-function clearTurnArrows() { turnArrowMarkers2.forEach(function(m) { m.remove(); }); turnArrowMarkers2 = []; }
-
-function showTurnArrows(steps) {
-  clearTurnArrows();
-  if (!steps) return;
-  var rendered = {};
-  steps.forEach(function(step, i) {
-    if (i === 0 || i === steps.length - 1) return;
-    var loc = step.maneuver && step.maneuver.location; if (!loc) return;
-    var key = Math.round(loc[1]*4000)+'_'+Math.round(loc[0]*4000);
-    if (rendered[key]) return; rendered[key] = true;
-    var type = step.maneuver.type || '', mod = step.maneuver.modifier || '';
-    var svg;
-    if (mod.includes('right') && mod.includes('sharp')) svg='<polygon points="17,3 17,11 9,11 9,15 4,9 9,3" fill="white"/>';
-    else if (mod.includes('left') && mod.includes('sharp')) svg='<polygon points="7,3 7,11 15,11 15,15 20,9 15,3" fill="white"/>';
-    else if (mod.includes('right')) svg='<path d="M5 19L5 10Q5 5 10 5L14 5L14 2L19 7L14 12L14 9L10 9Q8 9 8 11L8 19Z" fill="white"/>';
-    else if (mod.includes('left')) svg='<path d="M19 19L19 10Q19 5 14 5L10 5L10 2L5 7L10 12L10 9L14 9Q16 9 16 11L16 19Z" fill="white"/>';
-    else if (type==='roundabout'||type==='rotary') svg='<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="white" stroke-width="2.5" fill="none"/><path d="M3 3v5h5" stroke="white" stroke-width="2.5" fill="none"/>';
-    else svg='<polygon points="12,2 17,10 14,10 14,22 10,22 10,10 7,10" fill="white" opacity="0.75"/>';
-    var el = document.createElement('div');
-    el.style.cssText='display:flex;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));';
-    el.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'+svg+'</svg>';
-    var mk = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat(loc).addTo(map);
-    turnArrowMarkers2.push(mk);
-  });
-}
-
-function getTurnIcon(step) {
-  if (!step || !step.maneuver) return TURN_ICONS2['straight'];
-  var type = step.maneuver.type || '', mod = step.maneuver.modifier || '';
-  if (type === 'arrive') return TURN_ICONS2['arrive'];
-  if (type === 'roundabout' || type === 'rotary') return TURN_ICONS2['roundabout'];
-  if (mod.includes('sharp right')) return TURN_ICONS2['turn sharp right'];
-  if (mod.includes('sharp left')) return TURN_ICONS2['turn sharp left'];
-  if (mod.includes('right')) return TURN_ICONS2['turn right'];
-  if (mod.includes('left')) return TURN_ICONS2['turn left'];
-  return TURN_ICONS2['straight'];
-}
+var TURN_ICONS2 = {
+  'turn right':        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3h6l3 3-3 3H9"/><path d="M15 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14"/></svg>',
+  'turn left':         '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3H9L6 6l3 3h6"/><path d="M9 6h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5"/></svg>',
+  'turn sharp right':  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 18V9a6 6 0 0 1 6-6h4m0 0-3-3m3 3-3 3"/></svg>',
+  'turn sharp left':   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 18V9a6 6 0 0 0-6-6H9m0 0 3-3M9 3l3 3"/></svg>',
+  'turn slight right': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 20V8m0 0 5 5m-5-5 5-5"/></svg>',
+  'turn slight left':  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 20V8m0 0-5 5m5-5-5-5"/></svg>',
+  'straight':          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="20" x2="12" y2="4"/><polyline points="8 8 12 4 16 8"/></svg>',
+  'merge':             '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="20" x2="12" y2="4"/><polyline points="8 8 12 4 16 8"/></svg>',
+  'roundabout':        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
+  'rotary':            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
+  'arrive':            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>',
+  'depart':            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="20" x2="12" y2="4"/><polyline points="8 8 12 4 16 8"/></svg>',
+  'fork':              '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="20" x2="12" y2="4"/><polyline points="8 8 12 4 16 8"/></svg>',
+  'off ramp':          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 5v14M5 5l7 7"/></svg>',
+  'on ramp':           '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 5v14M19 5l-7 7"/></svg>'
+};
 
 function updateNavDisplay2() {
   var steps = S.curRoute && S.curRoute.steps || [];
   if (!steps.length) return;
   var step = steps[Math.min(navStepIdx2, steps.length - 1)];
+  if (!step || !step.maneuver) return;
+  var type = step.maneuver.type || '';
+  var mod  = step.maneuver.modifier || '';
+  var key = (mod + (mod && type ? ' ' : '') + type).trim() || 'straight';
+  var icon = TURN_ICONS2[key] || TURN_ICONS2[type] || TURN_ICONS2['straight'];
   var navIcon = document.getElementById('nav-instruction-icon');
   var navMain = document.getElementById('nav-instruction-main');
   var navDist = document.getElementById('nav-instruction-dist');
-  if (navIcon) navIcon.innerHTML = getTurnIcon(step);
-  if (navMain) navMain.textContent = step.maneuver ? step.maneuver.instruction : '';
+  if (navIcon) navIcon.innerHTML = icon;
+  if (navMain) navMain.textContent = step.maneuver.instruction || type;
   var distM = step.distance || 0;
   var distStr = distM >= 1000 ? (distM/1000).toFixed(1)+' km' : Math.round(distM)+' m';
   if (navDist) navDist.textContent = 'In ' + distStr;
@@ -3891,7 +3814,7 @@ function startNav() {
   if (!steps || !steps.length) { toast('No navigation steps available', { tone: 'warn' }); return; }
   navStepIdx2 = 0; navDrivenKm2 = 0;
   var navOv = document.getElementById('nav-overlay');
-  if (navOv) navOv.classList.add('active');
+  if (navOv) { navOv.style.display = 'flex'; }
   var msh = document.getElementById('msh'); if (msh) msh.classList.add('hid');
   var bnav2 = document.getElementById('bnav'); if (bnav2) bnav2.style.display = 'none';
   var now2 = new Date(), eta2 = new Date(now2.getTime() + (S.curRoute.duration || 0)*60000);
@@ -3932,7 +3855,29 @@ function checkNavStep(lng2, lat2) {
   var loc = step.maneuver && step.maneuver.location; if (!loc) return;
   var dx=(lng2-loc[0])*111320*Math.cos(lat2*Math.PI/180), dy=(lat2-loc[1])*110574;
   if (Math.sqrt(dx*dx+dy*dy) < 30) {
+    var passedLoc = step.maneuver && step.maneuver.location;
     navStepIdx2++;
+
+    if (passedLoc) {
+      var passedKey = Math.round(passedLoc[1]*4000)+'_'+Math.round(passedLoc[0]*4000);
+      if (turnArrowPassMap[passedKey]) {
+        var entry = turnArrowPassMap[passedKey];
+        entry.passIndex++;
+        if (entry.passIndex < entry.group.length) {
+          var nextStep = entry.group[entry.passIndex].step;
+          var nt = nextStep.maneuver.type||'', nm = nextStep.maneuver.modifier||'';
+          var ns2;
+          if (nt==='roundabout'||nt==='rotary') ns2='<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M3 3v5h5" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+          else if (nm.includes('right')&&nm.includes('sharp')) ns2='<polygon points="17,3 17,11 9,11 9,15 4,9 9,3" fill="white"/>';
+          else if (nm.includes('left')&&nm.includes('sharp')) ns2='<polygon points="7,3 7,11 15,11 15,15 20,9 15,3" fill="white"/>';
+          else if (nm.includes('right')) ns2='<path d="M5 19 L5 10 Q5 5 10 5 L14 5 L14 2 L19 7 L14 12 L14 9 L10 9 Q8 9 8 11 L8 19 Z" fill="white"/>';
+          else if (nm.includes('left')) ns2='<path d="M19 19 L19 10 Q19 5 14 5 L10 5 L10 2 L5 7 L10 12 L10 9 L14 9 Q16 9 16 11 L16 19 Z" fill="white"/>';
+          else ns2='<polygon points="12,2 17,10 14,10 14,22 10,22 10,10 7,10" fill="white" opacity="0.75"/>';
+          entry.el.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none">' + ns2 + '</svg>';
+        }
+      }
+    }
+
     if (navStepIdx2 >= steps.length) {
       var ni=document.getElementById('nav-instruction-icon'), nm=document.getElementById('nav-instruction-main');
       if (ni) ni.innerHTML=TURN_ICONS2['arrive']; if (nm) nm.textContent='You have arrived!';
@@ -3945,7 +3890,7 @@ function checkNavStep(lng2, lat2) {
 function stopNav() {
   if (navWatchId2!==null){navigator.geolocation.clearWatch(navWatchId2);navWatchId2=null;}
   clearTurnArrows();
-  var navOv=document.getElementById('nav-overlay'); if(navOv)navOv.classList.remove('active');
+  var navOv=document.getElementById('nav-overlay'); if(navOv)navOv.style.display='none';
   var msh=$("msh"); if(msh)msh.classList.remove('hid');
   var bnav2=$("bnav"); if(bnav2)bnav2.style.display='';
   map.easeTo({pitch:0,bearing:0,zoom:13,speed:0.8});

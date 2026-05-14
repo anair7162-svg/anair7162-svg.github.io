@@ -2447,7 +2447,7 @@ $("ctheme").addEventListener('click', function() {
     if (!map.getLayer('3d-buildings')) {
       var fs = map.getStyle().layers.find(function(l) { return l.type === 'symbol'; });
       var bid = fs ? fs.id : undefined;
-      map.addLayer({ id: '3d-buildings', source: 'composite', 'source-layer': 'building', filter: ['==', 'extrude', 'true'], type: 'fill-extrusion', minzoom: 14, paint: { 'fill-extrusion-color': '#2a2a2a', 'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14, 0, 14.05, ['get', 'height']], 'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 14, 0, 14.05, ['get', 'min_height']], 'fill-extrusion-opacity': 0.75 } }, bid);
+      map.addLayer({ id: '3d-buildings', source: 'composite', 'source-layer': 'building', filter: ['==', 'extrude', 'true'], type: 'fill-extrusion', minzoom: 14, paint: { 'fill-extrusion-color': isDark ? '#2a2a2a' : '#e8e4dc', 'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14, 0, 14.05, ['get', 'height']], 'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 14, 0, 14.05, ['get', 'min_height']], 'fill-extrusion-opacity': isDark ? 0.75 : 0.9 } }, bid);
     }
     if (S.curRoute) setTimeout(function() { drawRoute(S.genIdx); }, 300);
   });
